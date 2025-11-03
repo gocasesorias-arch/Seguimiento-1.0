@@ -18,25 +18,8 @@
 <body>
     <div id="root"></div>
 
-    <script>
-        // Datos del plan de capacitación embebidos
-        // Datos cargados desde archivo JSON externo
-        window.cursosData = [];
-        
-        // Cargar datos desde el archivo JSON
-        fetch('capacitaciones_data.json')
-            .then(response => response.json())
-            .then(data => {
-                window.cursosData = data;
-                // Notificar que los datos están listos
-                window.dispatchEvent(new Event('dataLoaded'));
-            })
-            .catch(error => {
-                console.error('Error al cargar los datos:', error);
-                alert('Error al cargar los datos de capacitaciones. Por favor, recarga la página.');
-            });
-        console.log('Datos cargados:', window.cursosData.length, 'registros');
-    </script>
+    <!-- Datos del plan de capacitación cargados desde archivo JavaScript externo -->
+    <script src="cursos_data_inline.js"></script>
 
     <script type="text/babel">
         const { useState, useEffect } = React;
@@ -1059,21 +1042,9 @@
             );
         };
 
-        // Renderizar la aplicación cuando los datos estén cargados
+        // Renderizar la aplicación
         const root = ReactDOM.createRoot(document.getElementById('root'));
-
-        function renderApp() {
-            root.render(<SeguimientoCapacitaciones />);
-        }
-
-        // Esperar a que los datos se carguen
-        if (window.cursosData && window.cursosData.length > 0) {
-            // Si los datos ya están disponibles, renderizar inmediatamente
-            renderApp();
-        } else {
-            // Si no, esperar al evento dataLoaded
-            window.addEventListener('dataLoaded', renderApp);
-        }
+        root.render(<SeguimientoCapacitaciones />);
     </script>
 </body>
 </html>
