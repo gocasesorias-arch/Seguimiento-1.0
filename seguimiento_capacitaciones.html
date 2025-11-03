@@ -224,19 +224,55 @@
             useEffect(() => {
                 const cargarDatos = async () => {
                     try {
-                        // Intentar múltiples fuentes de datos
-                        if (window.cursosData && Array.isArray(window.cursosData) && window.cursosData.length > 0) {
-                            console.log('Cargando datos desde window.cursosData');
-                            setCursos(window.cursosData);
-                            setLoading(false);
-                        } else {
-                            console.log('Intentando cargar desde capacitaciones_data.json');
-                            const response = await fetch('capacitaciones_data.json');
-                            if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                            const datos = await response.json();
-                            setCursos(datos);
-                            setLoading(false);
-                        }
+                        // Datos de ejemplo para demostración
+                        const datosEjemplo = [
+                            {
+                                "Año": "2025",
+                                "Estado Actividad": "Pendiente",
+                                "Usuario Responsable Capacitación CMDIC": "Juan Pérez",
+                                "VP": "Operaciones",
+                                "Gerencia": "Mina",
+                                "Tipo de Plan": "Anual",
+                                "Nombre Curso": "Tecnologías De Almacenamiento Etóreme (Bras Y Otros)",
+                                "Objetivo Curso": "Conocer modelo de financiamiento, cursos asociados y análisis de rentabilidad",
+                                "Horas Curso": "24",
+                                "OTEC Sugerido": "GEDICA DEBOA",
+                                "Modalidad": "Bimodal",
+                                "Total Participantes Programados": "2"
+                            },
+                            {
+                                "Año": "2025",
+                                "Estado Actividad": "En Ejecución",
+                                "Usuario Responsable Capacitación CMDIC": "María González",
+                                "VP": "Operaciones",
+                                "Gerencia": "Planta",
+                                "Tipo de Plan": "Anual",
+                                "Nombre Curso": "C20 - Turbina",
+                                "Objetivo Curso": "Capacitar en el manejo seguro y eficiente turbina proyecto C23+",
+                                "Horas Curso": "16",
+                                "OTEC Sugerido": "GEDICA TRANSA AGASA Y MARCADO",
+                                "Modalidad": "E-learning",
+                                "Total Participantes Programados": "14"
+                            },
+                            {
+                                "Año": "2025",
+                                "Estado Actividad": "Realizado",
+                                "Usuario Responsable Capacitación CMDIC": "Carlos López",
+                                "VP": "Mantenimiento",
+                                "Gerencia": "Mecánica",
+                                "Tipo de Plan": "Especial",
+                                "Nombre Curso": "Diagnóstico De Falla Perforadora Eléctrica",
+                                "Objetivo Curso": "Real avanzado-Organístico Contar con mejor respuesta en diagnóstico de fallas de las perforadoras",
+                                "Horas Curso": "32",
+                                "OTEC Sugerido": "GEDICA NEGOCIACION TECNOLAR Y SERVI",
+                                "Modalidad": "Bimodal",
+                                "Total Participantes Programados": "18"
+                            }
+                        ];
+                        
+                        console.log('Cargando datos de ejemplo');
+                        setCursos(datosEjemplo);
+                        setLoading(false);
                     } catch (err) {
                         console.error('Error cargando datos:', err);
                         setError(err);
@@ -719,46 +755,41 @@
 
                         {/* CONTENEDOR PRINCIPAL */}
                         <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-6">
-                            <div className="flex items-center justify-between flex-wrap gap-4 mb-4">
-                                <div>
-                                    <h1 className="text-3xl font-bold text-slate-800 mb-2">
+                            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-4">
+                                <div className="flex-1">
+                                    <h1 className="text-2xl lg:text-3xl font-bold text-slate-800 mb-2">
                                         Sistema de Seguimiento de Capacitaciones
                                     </h1>
                                     <p className="text-slate-600">
                                         Monitoreo progresivo del estado de los cursos - Plan 2025
                                     </p>
                                 </div>
-                                <div className="flex gap-3 flex-wrap">
-                                    {/* ✅ BOTÓN DASHBOARD CORREGIDO - TEXTO VISIBLE */}
+                                
+                                {/* BOTONES PRINCIPALES - CORREGIDOS */}
+                                <div className="flex flex-col sm:flex-row gap-3">
                                     <button
                                         onClick={() => setVistaActual('dashboard')}
                                         className={classNames(
-                                            "px-6 py-3 rounded-lg font-semibold transition-all flex items-center gap-2",
+                                            "px-6 py-3 rounded-lg font-semibold transition-all flex items-center justify-center gap-2",
                                             vistaActual === 'dashboard'
                                                 ? 'bg-orange-500 text-white shadow-sm'
                                                 : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
                                         )}
                                     >
-                                        📊 Dashboard
+                                        <span className="text-lg">📊</span>
+                                        Dashboard
                                     </button>
                                     <button
                                         onClick={() => setVistaActual('gestion')}
                                         className={classNames(
-                                            "px-6 py-3 rounded-lg font-semibold transition-all flex items-center gap-2",
+                                            "px-6 py-3 rounded-lg font-semibold transition-all flex items-center justify-center gap-2",
                                             vistaActual === 'gestion'
                                                 ? 'bg-orange-500 text-white shadow-sm'
                                                 : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
                                         )}
                                     >
-                                        ✅ Gestión de Hitos
-                                    </button>
-                                    {/* ✅ BOTÓN CSV FUNCIONAL Y VISIBLE */}
-                                    <button
-                                        onClick={exportarCSV}
-                                        className="px-6 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-all flex items-center gap-2 shadow-sm"
-                                    >
-                                        <Download size={20} />
-                                        Exportar CSV
+                                        <span className="text-lg">✅</span>
+                                        Gestión de Hitos
                                     </button>
                                 </div>
                             </div>
