@@ -205,17 +205,20 @@
             useEffect(() => {
                 setTimeout(() => {
                     try {
-                        if (window.cursosData) {
+                        console.log('Verificando window.cursosData...', window.cursosData ? `${window.cursosData.length} registros` : 'No definido');
+
+                        if (window.cursosData && window.cursosData.length > 0) {
                             const cursosData = window.cursosData.slice(1);
+                            console.log('Datos procesados:', cursosData.length, 'cursos');
                             setCursos(cursosData);
-                            
+
                             // Extraer opciones para todos los filtros
                             const vpsUnicas = ['Todos', ...new Set(cursosData.map(c => c.Column9).filter(Boolean))].sort();
                             const gerenciasUnicas = ['Todas', ...new Set(cursosData.map(c => c.Column10).filter(Boolean))].sort();
                             const tiposPlanUnicos = ['Todos', ...new Set(cursosData.map(c => c.Column11).filter(Boolean))].sort();
                             const añosUnicos = ['Todos', ...new Set(cursosData.map(c => String(c.Column2)).filter(Boolean))].sort();
                             const responsablesUnicos = ['Todos', ...new Set(cursosData.map(c => c.Column7).filter(Boolean))].sort();
-                            
+
                             setOpcionesFiltros({
                                 vps: vpsUnicas,
                                 gerencias: gerenciasUnicas,
@@ -223,7 +226,7 @@
                                 años: añosUnicos,
                                 responsables: responsablesUnicos
                             });
-                            
+
                             // Inicializar progreso
                             const progresoGuardado = localStorage.getItem('progresoHitos');
                             if (progresoGuardado) {
@@ -238,7 +241,11 @@
                                 });
                                 setProgresoHitos(nuevoProgreso);
                             }
-                            
+
+                            setCargando(false);
+                            console.log('Datos cargados exitosamente');
+                        } else {
+                            console.error('window.cursosData no está disponible o está vacío');
                             setCargando(false);
                         }
                     } catch (error) {
@@ -358,6 +365,30 @@
                         <div className="text-center">
                             <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto mb-4"></div>
                             <p className="text-xl text-slate-700">Cargando datos...</p>
+                        </div>
+                    </div>
+                );
+            }
+
+            // Verificar si hay datos disponibles
+            if (!cursos || cursos.length === 0) {
+                return (
+                    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
+                        <div className="text-center bg-white rounded-xl shadow-lg p-8 max-w-md">
+                            <XCircle size={64} className="text-red-500 mx-auto mb-4" />
+                            <h2 className="text-2xl font-bold text-slate-800 mb-2">Error al cargar datos</h2>
+                            <p className="text-slate-600 mb-4">
+                                No se pudieron cargar los datos de capacitaciones.
+                            </p>
+                            <p className="text-sm text-slate-500 mb-4">
+                                Verifica que el archivo cursos_data_inline.js esté en la misma carpeta que este archivo HTML.
+                            </p>
+                            <button
+                                onClick={() => window.location.reload()}
+                                className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                            >
+                                Recargar página
+                            </button>
                         </div>
                     </div>
                 );
