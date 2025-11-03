@@ -1,175 +1,69 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sistema de Seguimiento de Capacitaciones — Pro</title>
-
-  <!-- React / ReactDOM -->
-  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  <!-- Babel (solo para demo). En producción, precompilar JSX. -->
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  <!-- Tailwind -->
-  <script src="https://cdn.tailwindcss.com"></script>
-
-  <style>
-    :root {
-      --brand: #00563F;
-      --accent: #E87722;
-    }
-    body { margin: 0; padding: 0; }
-    .scrollbar-thin::-webkit-scrollbar { height: 8px; width: 8px; }
-    .scrollbar-thin::-webkit-scrollbar-thumb { background: rgba(0,0,0,.2); border-radius: 8px; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Seguimiento de Capacitaciones</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+    </style>
 </head>
-<body class="bg-gradient-to-br from-slate-50 to-slate-100">
-  <div id="root"></div>
+<body>
+    <div id="root"></div>
 
-  <!-- Fuente de datos opcional (compatibilidad con tu archivo actual): 
-       Si incluyes un <script src="cursos_data_inline.js"></script> que define window.cursosData,
-       la app lo usará. Si no existe, intentará fetch('capacitaciones_data.json'). -->
-  <!-- <script src="cursos_data_inline.js"></script> -->
+    <!-- Datos del plan de capacitación cargados desde archivo JavaScript externo -->
+    <script src="cursos_data_inline.js"></script>
 
-  <script type="text/babel">
-    const { useEffect, useMemo, useState } = React;
+    <script type="text/babel">
+        const { useState, useEffect } = React;
 
-    /** ======================= **
-     * Utilidades e Iconos
-     ** ======================= */
-    const classNames = (...xs) => xs.filter(Boolean).join(" ");
+        // Iconos
+        const CheckCircle = ({ size = 24, className = "" }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                <polyline points="22 4 12 14.01 9 11.01" />
+            </svg>
+        );
 
-    const Check = (p) => (
-      <svg width={p.size||24} height={p.size||24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={p.className||""}>
-        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-        <polyline points="22 4 12 14.01 9 11.01" />
-      </svg>
-    );
-    const Circle = (p) => (
-      <svg width={p.size||24} height={p.size||24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={p.className||""}>
-        <circle cx="12" cy="12" r="10" />
-      </svg>
-    );
-    const Clock = (p) => (
-      <svg width={p.size||24} height={p.size||24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={p.className||""}>
-        <circle cx="12" cy="12" r="10" />
-        <polyline points="12 6 12 12 16 14" />
-      </svg>
-    );
-    const X = (p) => (
-      <svg width={p.size||24} height={p.size||24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={p.className||""}>
-        <circle cx="12" cy="12" r="10" />
-        <line x1="15" y1="9" x2="9" y2="15" />
-        <line x1="9" y1="9" x2="15" y2="15" />
-      </svg>
-    );
-    const Left = (p) => (
-      <svg width={p.size||24} height={p.size||24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={p.className||""}>
-        <polyline points="15 18 9 12 15 6" />
-      </svg>
-    );
-    const Right = (p) => (
-      <svg width={p.size||24} height={p.size||24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={p.className||""}>
-        <polyline points="9 18 15 12 9 6" />
-      </svg>
-    );
-    const FilterIcon = (p) => (
-      <svg width={p.size||24} height={p.size||24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={p.className||""}>
-        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
-      </svg>
-    );
-    const Download = (p) => (
-      <svg viewBox="0 0 24 24" width={p.size||20} height={p.size||20} fill="none" stroke="currentColor" strokeWidth="2" className={p.className||""}>
-        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-        <polyline points="7 10 12 15 17 10"/>
-        <line x1="12" y1="15" x2="12" y2="3"/>
-      </svg>
-    );
+        const Circle = ({ size = 24, className = "" }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
+                <circle cx="12" cy="12" r="10" />
+            </svg>
+        );
 
-    /** ======================= **
-     * Mapa de columnas (evita magic strings)
-     ** ======================= */
-    const COL = Object.freeze({
-      anio: 'Column2',
-      estado: 'Column4',
-      responsable: 'Column7',
-      vp: 'Column9',
-      gerencia: 'Column10',
-      tipoPlan: 'Column11',
-      nombre: 'Column13',
-      objetivo: 'Column14',
-      horas: 'Column15',
-      otec: 'Column20',
-      modalidad: 'Column21',
-      participantes: '18348',
-    });
+        const Clock = ({ size = 24, className = "" }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+            </svg>
+        );
 
-    /** ======================= **
-     * Definición de flujo de estados
-     ** ======================= */
-    const HITOS = [
-      { id: 0, nombre: "Pendiente", estado: "Pendiente", icon: Circle, color: "bg-gray-100 border-gray-400 text-gray-700",
-        descripcion: "Inicio del proceso — Recepción y validación de requerimientos",
-        subHitos: [
-          "Recepción de requerimientos desde equipo de Capacitación",
-          "Validación con referente técnico (líderes de proceso)",
-          "Análisis de necesidades y alcance",
-          "Aprobación preliminar del requerimiento"
-        ] },
-      { id: 1, nombre: "Planificado", estado: "Planificado", icon: Download, color: "bg-blue-100 border-blue-400 text-blue-700",
-        descripcion: "Búsqueda y selección de proveedor",
-        subHitos: [
-          "Solicitar propuestas técnicas y económicas",
-          "Matriz comparativa y propuesta final",
-          "Validación con líderes de proceso",
-          "Asignación de presupuesto"
-        ] },
-      { id: 2, nombre: "En Proceso", estado: "En Proceso", icon: Clock, color: "bg-indigo-100 border-indigo-400 text-indigo-700",
-        descripcion: "Preparación de logística y fechas",
-        subHitos: [
-          "Revisión de turnos y condiciones operativas",
-          "Estructuración de fechas de ejecución",
-          "Validación final de nóminas",
-          "Preparación de materiales y recursos"
-        ] },
-      { id: 3, nombre: "Programado", estado: "Programado", icon: Clock, color: "bg-yellow-100 border-yellow-500 text-yellow-800",
-        descripcion: "Coordinación pre-ejecución",
-        subHitos: [
-          "Apoyo logístico adicional (si aplica)",
-          "Invitaciones enviadas",
-          "Coordinación con proveedor",
-          "Confirmación de participación"
-        ] },
-      { id: 4, nombre: "En Ejecución", estado: "En Ejecución", icon: Clock, color: "bg-orange-100 border-orange-500 text-orange-700",
-        descripcion: "Curso en desarrollo — Supervisión activa",
-        subHitos: [
-          "Verificar ejecución de actividades",
-          "Seguimiento de asistencia diaria",
-          "Evaluación de desempeño",
-          "Registro de incidencias"
-        ] },
-      { id: 5, nombre: "Realizado", estado: "Realizado", icon: Check, color: "bg-green-100 border-green-500 text-green-700",
-        descripcion: "Cierre y documentación",
-        subHitos: [
-          "Subir asistencia a Clikma",
-          "Encuesta de satisfacción",
-          "Emisión de certificados",
-          "Cierre administrativo"
-        ] },
-    ];
+        const XCircle = ({ size = 24, className = "" }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
+                <circle cx="12" cy="12" r="10" />
+                <line x1="15" y1="9" x2="9" y2="15" />
+                <line x1="9" y1="9" x2="15" y2="15" />
+            </svg>
+        );
 
-    const ESPECIALES = [
-      { nombre: "Suspendido", estado: "Suspendido", icon: X, color: "bg-red-100 border-red-500 text-red-700", descripcion: "Curso detenido temporalmente" },
-      { nombre: "Postergado", estado: "Postergado", icon: Circle, color: "bg-purple-100 border-purple-400 text-purple-700", descripcion: "Reprogramado a fechas futuras" },
-    ];
+        const ChevronLeft = ({ size = 24, className = "" }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
+                <polyline points="15 18 9 12 15 6" />
+            </svg>
+        );
 
-    /** ======================= **
-     * Carga de datos (compat: window.cursosData || fetch JSON local)
-     ** ======================= */
-    function useCursos() {
-      const [cursos, setCursos] = useState([]);
-      const [loading, setLoading] = useState(true);
-      const [error, setError] = useState(null);
+        const ChevronRight = ({ size = 24, className = "" }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
+                <polyline points="9 18 15 12 9 6" />
+            </svg>
+        );
 
         const Filter = ({ size = 24, className = "" }) => (
             <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
@@ -1179,521 +1073,9 @@
             );
         };
 
-        if (Array.isArray(window.cursosData) && window.cursosData.length) {
-          got(window.cursosData);
-        } else {
-          fetch("capacitaciones_data.json", { cache: "no-store" })
-            .then(r => { if(!r.ok) throw new Error("No se pudo cargar capacitaciones_data.json"); return r.json(); })
-            .then(got)
-            .catch((e) => { setError(e); setLoading(false); });
-        }
-      }, []);
-
-      return { cursos, setCursos, loading, error };
-    }
-
-    /** ======================= **
-     * Componente Principal
-     ** ======================= */
-    function App() {
-      const { cursos, setCursos, loading, error } = useCursos();
-
-      // UI state
-      const [vista, setVista] = useState("dashboard");
-      const [paso, setPaso] = useState(0);
-      const [texto, setTexto] = useState("");
-      const [mostrarFiltros, setMostrarFiltros] = useState(true);
-
-      // Filtros con persistencia
-      const defaultFiltros = { vp: "Todos", gerencia: "Todas", tipoPlan: "Todos", año: "Todos", responsable: "Todos" };
-      const [filtros, setFiltros] = useState(() => {
-        try { return JSON.parse(localStorage.getItem("filtrosPAC")) || defaultFiltros; } catch { return defaultFiltros; }
-      });
-      useEffect(() => { localStorage.setItem("filtrosPAC", JSON.stringify(filtros)); }, [filtros]);
-
-      // Progreso por curso con persistencia
-      const [progreso, setProgreso] = useState(() => {
-        try { return JSON.parse(localStorage.getItem("progresoHitos_v2025")) || {}; } catch { return {}; }
-      });
-      useEffect(() => { localStorage.setItem("progresoHitos_v2025", JSON.stringify(progreso)); }, [progreso]);
-
-      const opciones = useMemo(() => ({
-        vps: ["Todos", ...new Set(cursos.map(c => c[COL.vp]).filter(Boolean))].sort(),
-        gerencias: ["Todas", ...new Set(cursos.map(c => c[COL.gerencia]).filter(Boolean))].sort(),
-        tipos: ["Todos", ...new Set(cursos.map(c => c[COL.tipoPlan]).filter(Boolean))].sort(),
-        años: ["Todos", ...new Set(cursos.map(c => String(c[COL.anio])).filter(Boolean))].sort(),
-        responsables: ["Todos", ...new Set(cursos.map(c => c[COL.responsable]).filter(Boolean))].sort(),
-      }), [cursos]);
-
-      const aplicaFiltros = (c) => {
-        const matchText =
-          !texto ||
-          [COL.nombre, COL.objetivo, COL.vp, COL.gerencia, COL.tipoPlan, COL.modalidad, COL.responsable]
-            .some(k => String(c[k]||"").toLowerCase().includes(texto.toLowerCase()));
-        const okVP = filtros.vp === "Todos" || c[COL.vp] === filtros.vp;
-        const okG = filtros.gerencia === "Todas" || c[COL.gerencia] === filtros.gerencia;
-        const okT = filtros.tipoPlan === "Todos" || c[COL.tipoPlan] === filtros.tipoPlan;
-        const okA = filtros.año === "Todos" || String(c[COL.anio]) === filtros.año;
-        const okR = filtros.responsable === "Todos" || c[COL.responsable] === filtros.responsable;
-        return matchText && okVP && okG && okT && okA && okR;
-      };
-
-      const cursosFiltrados = useMemo(() => cursos.filter(aplicaFiltros), [cursos, filtros, texto]);
-
-      const pasoData = HITOS[paso];
-      const cursosPaso = useMemo(() => cursosFiltrados.filter(c => c[COL.estado] === pasoData.estado), [cursosFiltrados, pasoData]);
-
-      const resumen = useMemo(() => {
-        const total = cursosFiltrados.length || 0;
-        const count = (estado) => cursosFiltrados.filter(c => c[COL.estado] === estado).length;
-        const r = {
-          total,
-          pendiente: count("Pendiente"),
-          planificado: count("Planificado"),
-          prep: count("En Proceso") + count("Programado"),
-          ejec: count("En Ejecución"),
-          ok: count("Realizado"),
-          susp: count("Suspendido"),
-          post: count("Postergado"),
-        };
-        r.pctOK = total ? (r.ok / total) * 100 : 0;
-        return r;
-      }, [cursosFiltrados]);
-
-      const hitosCurso = (estado) => (HITOS.find(h => h.estado === estado)?.subHitos || []);
-      const colorEstado = (estado) => (HITOS.find(h => h.estado === estado)?.color || "bg-gray-100 border-gray-400 text-gray-700");
-
-      // Acciones
-      const setFiltro = (k, v) => setFiltros(x => ({ ...x, [k]: v }));
-      const limpiarFiltros = () => setFiltros(defaultFiltros);
-      const toggleHito = (idx, i) => {
-        setProgreso(prev => {
-          const p = { ...prev };
-          const curr = p[idx] || { hitos: [false, false, false, false], estadoActual: cursos[idx][COL.estado] };
-          const nextHitos = [...curr.hitos];
-          nextHitos[i] = !nextHitos[i];
-
-          let estadoActual = curr.estadoActual || cursos[idx][COL.estado];
-          if (nextHitos.every(Boolean)) {
-            const pos = HITOS.findIndex(h => h.estado === estadoActual);
-            if (pos >= 0 && pos < HITOS.length - 1) {
-              estadoActual = HITOS[pos + 1].estado;
-              nextHitos.fill(false);
-              setCursos(prevCursos => {
-                const nc = [...prevCursos];
-                nc[idx] = { ...nc[idx], [COL.estado]: estadoActual };
-                return nc;
-              });
-            }
-          }
-          p[idx] = { hitos: nextHitos, estadoActual };
-          return p;
-        });
-      };
-      const setEstadoEspecial = (idx, estado) => {
-        setProgreso(prev => {
-          const p = { ...prev };
-          p[idx] = { hitos: [false, false, false, false], estadoActual: estado };
-          return p;
-        });
-        setCursos(prev => {
-          const nc = [...prev];
-          nc[idx] = { ...nc[idx], [COL.estado]: estado };
-          return nc;
-        });
-      };
-
-      const exportCSV = () => {
-        const head = ["Año","Estado","Responsable","VP","Gerencia","Tipo Plan","Nombre","Objetivo","Horas","OTEC","Modalidad","Participantes"];
-        const rows = cursosFiltrados.map(c => [
-          c[COL.anio], c[COL.estado], c[COL.responsable], c[COL.vp], c[COL.gerencia], c[COL.tipoPlan],
-          c[COL.nombre], (c[COL.objetivo]||"").replace(/\n/g," "),
-          c[COL.horas], c[COL.otec], c[COL.modalidad], c[COL.participantes]
-        ]);
-        const csv = [head, ...rows].map(r => r.map(x => `"${(x??"").toString().replace(/"/g,'""')}"`).join(",")).join("\n");
-        const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url; a.download = "capacitaciones_filtrado.csv";
-        document.body.appendChild(a); a.click(); a.remove();
-        URL.revokeObjectURL(url);
-      };
-
-      if (loading) {
-        return (
-          <div className="min-h-screen flex items-center justify-center">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto mb-4"></div>
-              <p className="text-xl text-slate-700">Cargando datos...</p>
-            </div>
-          </div>
-        );
-      }
-      if (error) {
-        return (
-          <div className="max-w-xl mx-auto mt-10 bg-red-50 border-2 border-red-200 text-red-700 p-6 rounded-xl">
-            <p className="font-semibold mb-2">Error al cargar datos</p>
-            <p className="text-sm">{String(error)}</p>
-            <p className="text-sm mt-2">Asegúrate de tener <code>cursos_data_inline.js</code> con <code>window.cursosData</code> o el archivo <code>capacitaciones_data.json</code> en el mismo directorio.</p>
-          </div>
-        );
-      }
-
-      const pasoData = HITOS[paso];
-      const PasoIcon = pasoData.icon;
-
-      return (
-        <div className="max-w-7xl mx-auto p-6">
-          {/* Header */}
-          <div className="bg-white rounded-xl shadow-lg p-6 mb-6 sticky top-0 z-10">
-            <div className="flex items-center justify-between flex-wrap gap-4">
-              <div>
-                <h1 className="text-3xl font-bold text-slate-800 mb-1">Sistema de Seguimiento de Capacitaciones</h1>
-                <p className="text-slate-600">Monitoreo del Plan — 2025</p>
-              </div>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setVista("dashboard")}
-                  className={classNames(
-                    "px-4 py-2 rounded-lg font-semibold transition-all",
-                    vista === "dashboard" ? "bg-blue-600 text-white shadow-lg" : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                  )}
-                >
-                  📊 Dashboard
-                </button>
-                <button
-                  onClick={() => setVista("gestion")}
-                  className={classNames(
-                    "px-4 py-2 rounded-lg font-semibold transition-all",
-                    vista === "gestion" ? "bg-blue-600 text-white shadow-lg" : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                  )}
-                >
-                  ✅ Gestión de Hitos
-                </button>
-                <button onClick={exportCSV} className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 flex items-center gap-2">
-                  <Download /> Exportar CSV
-                </button>
-              </div>
-            </div>
-            {/* Búsqueda rápida */}
-            <div className="mt-4 flex flex-col lg:flex-row gap-3">
-              <div className="flex-1">
-                <input
-                  value={texto}
-                  onChange={(e)=>setTexto(e.target.value)}
-                  placeholder="Buscar por nombre, objetivo, VP, gerencia, modalidad…"
-                  className="w-full px-4 py-2 border-2 border-slate-300 rounded-lg focus:border-blue-500 focus:outline-none"
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <button onClick={()=>setMostrarFiltros(v=>!v)} className="px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg">
-                  <span className="inline-flex items-center gap-2"><FilterIcon /> {mostrarFiltros ? "Ocultar filtros" : "Mostrar filtros"}</span>
-                </button>
-                <button onClick={limpiarFiltros} className="px-4 py-2 bg-red-100 text-red-700 border-2 border-red-200 rounded-lg hover:bg-red-200">Limpiar</button>
-              </div>
-            </div>
-            {mostrarFiltros && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3 mt-4">
-                <select value={filtros.vp} onChange={(e)=>setFiltro("vp", e.target.value)} className="px-3 py-2 border-2 rounded-lg">
-                  {opciones.vps.map(v=> <option key={v} value={v}>{v}</option>)}
-                </select>
-                <select value={filtros.gerencia} onChange={(e)=>setFiltro("gerencia", e.target.value)} className="px-3 py-2 border-2 rounded-lg">
-                  {opciones.gerencias.map(v=> <option key={v} value={v}>{v}</option>)}
-                </select>
-                <select value={filtros.tipoPlan} onChange={(e)=>setFiltro("tipoPlan", e.target.value)} className="px-3 py-2 border-2 rounded-lg">
-                  {opciones.tipos.map(v=> <option key={v} value={v}>{v}</option>)}
-                </select>
-                <select value={filtros.año} onChange={(e)=>setFiltro("año", e.target.value)} className="px-3 py-2 border-2 rounded-lg">
-                  {opciones.años.map(v=> <option key={v} value={v}>{v}</option>)}
-                </select>
-                <select value={filtros.responsable} onChange={(e)=>setFiltro("responsable", e.target.value)} className="px-3 py-2 border-2 rounded-lg">
-                  {opciones.responsables.map(v=> <option key={v} value={v}>{v}</option>)}
-                </select>
-              </div>
-            )}
-          </div>
-
-          {/* DASHBOARD */}
-          {vista === "dashboard" && (
-            <>
-              {/* Progreso de estados */}
-              <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-                <h2 className="text-lg font-semibold text-slate-700 mb-4">Progreso de Estados</h2>
-                <div className="flex items-center justify-between mb-4 overflow-x-auto scrollbar-thin">
-                  {HITOS.map((h, idx) => {
-                    const Icon = h.icon;
-                    const qty = cursosFiltrados.filter(c => c[COL.estado] === h.estado).length;
-                    return (
-                      <div key={h.id} className="flex items-center flex-1 min-w-max">
-                        <button
-                          onClick={()=>setPaso(idx)}
-                          className={classNames("flex flex-col items-center transition-all", idx===paso ? "scale-110" : "opacity-60 hover:opacity-100")}
-                          title={h.descripcion}
-                        >
-                          <div className={classNames("w-12 h-12 rounded-full border-4 flex items-center justify-center",
-                            idx===paso ? h.color : idx<paso ? "bg-green-100 border-green-400 text-green-700" : "bg-gray-100 border-gray-300 text-gray-400")}>
-                            <Icon size={24} />
-                          </div>
-                          <span className={classNames("text-xs mt-2 font-medium text-center max-w-24", idx===paso ? "text-slate-800" : "text-slate-500")}>{h.nombre}</span>
-                          <span className={classNames("text-xs font-bold", idx===paso ? "text-blue-600" : "text-slate-400")}>{qty}</span>
-                        </button>
-                        {idx < HITOS.length-1 && <div className={classNames("flex-1 h-1 mx-2 rounded", idx<paso ? "bg-green-400" : "bg-gray-200")}></div>}
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {/* Navegación */}
-                <div className="flex items-center justify-between flex-wrap gap-4">
-                  <button onClick={()=>setPaso(p=>Math.max(0,p-1))} disabled={paso===0}
-                    className={classNames("flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all",
-                      paso===0 ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-blue-500 text-white hover:bg-blue-600 shadow-md hover:shadow-lg")}>
-                    <Left size={20}/> Anterior
-                  </button>
-                  <div className={classNames("flex items-center gap-4 px-8 py-4 rounded-xl border-4", pasoData.color)}>
-                    <PasoIcon size={32}/>
-                    <div>
-                      <h3 className="text-xl font-bold">{pasoData.nombre}</h3>
-                      <p className="text-sm opacity-80">{pasoData.descripcion}</p>
-                    </div>
-                  </div>
-                  <button onClick={()=>setPaso(p=>Math.min(HITOS.length-1,p+1))} disabled={paso===HITOS.length-1}
-                    className={classNames("flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all",
-                      paso===HITOS.length-1 ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-blue-500 text-white hover:bg-blue-600 shadow-md hover:shadow-lg")}>
-                    Siguiente <Right size={20}/>
-                  </button>
-                </div>
-              </div>
-
-              {/* Estados especiales */}
-              <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-                <h2 className="text-lg font-semibold text-slate-700 mb-4">Estados Especiales</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {ESPECIALES.map((esp, i) => {
-                    const IconE = esp.icon;
-                    const qty = cursosFiltrados.filter(c => c[COL.estado] === esp.estado).length;
-                    return (
-                      <div key={i} className={classNames("p-4 rounded-lg border-4 transition-all hover:shadow-lg", esp.color)}>
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center gap-3">
-                            <IconE size={32}/>
-                            <div>
-                              <h3 className="text-lg font-bold">{esp.nombre}</h3>
-                              <p className="text-sm opacity-80">{esp.descripcion}</p>
-                            </div>
-                          </div>
-                          <div className="text-center">
-                            <div className="text-3xl font-bold">{qty}</div>
-                            <div className="text-xs">cursos</div>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Lista del paso */}
-              <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold text-slate-700">Cursos en estado: {pasoData.nombre}</h3>
-                  <span className="px-4 py-2 bg-blue-100 text-blue-700 rounded-full font-bold">{cursosPaso.length} curso{cursosPaso.length!==1 ? "s":""}</span>
-                </div>
-                {cursosPaso.length===0 ? (
-                  <div className="text-center py-12 text-slate-500">
-                    <Circle size={48} className="mx-auto mb-4 opacity-50"/>
-                    <p className="text-lg">No hay cursos que cumplan los filtros</p>
-                  </div>
-                ) : (
-                  <div className="space-y-3 max-h-96 overflow-y-auto scrollbar-thin">
-                    {cursosPaso.map((c, idx) => (
-                      <div key={idx} className="p-4 border-2 border-slate-200 rounded-lg hover:border-blue-400 transition-all hover:shadow-md">
-                        <h4 className="font-semibold text-slate-800 mb-1">{c[COL.nombre] || "Sin nombre"}</h4>
-                        <p className="text-sm text-slate-600 mb-2">{c[COL.objetivo] || "Sin descripción"}</p>
-                        <div className="flex flex-wrap gap-2 text-xs">
-                          <span className="px-2 py-1 bg-purple-100 text-purple-700 rounded">{c[COL.vp] || "Sin VP"}</span>
-                          <span className="px-2 py-1 bg-slate-100 rounded">{c[COL.gerencia] || "Sin gerencia"}</span>
-                          <span className="px-2 py-1 bg-indigo-100 text-indigo-700 rounded">{c[COL.tipoPlan] || "Sin tipo"}</span>
-                          <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded">{c[COL.modalidad] || "Sin modalidad"}</span>
-                          <span className="px-2 py-1 bg-green-100 text-green-700 rounded">{c[COL.horas] || "0"} horas</span>
-                          <span className="px-2 py-1 bg-orange-100 text-orange-700 rounded">{c[COL.participantes] || "0"} participantes</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Resumen */}
-              <div className="bg-white rounded-xl shadow-lg p-6">
-                <h3 className="text-lg font-semibold text-slate-700 mb-4">Resumen general (filtros aplicados)</h3>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-                  <Tile label="Total" value={resumen.total} />
-                  <Tile label="Pendientes" value={resumen.pendiente} tone="gray" />
-                  <Tile label="Planificados" value={resumen.planificado} tone="blue" />
-                  <Tile label="Preparación" value={resumen.prep} tone="yellow" />
-                  <Tile label="En ejecución" value={resumen.ejec} tone="orange" />
-                  <Tile label="Realizados" value={resumen.ok} tone="green" />
-                </div>
-                <div className="grid grid-cols-2 gap-4 mt-4">
-                  <Tile label="Suspendidos" value={resumen.susp} tone="red" />
-                  <Tile label="Postergados" value={resumen.post} tone="purple" />
-                </div>
-                <div className="mt-6 p-4 bg-gradient-to-r from-blue-50 to-green-50 rounded-lg border-2 border-blue-200">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-semibold text-slate-700">Porcentaje de Completitud</h4>
-                    <span className="text-2xl font-bold text-green-700">{resumen.pctOK.toFixed(1)}%</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
-                    <div className="bg-gradient-to-r from-green-500 to-green-600 h-4 transition-all" style={{ width: `${resumen.pctOK}%` }} />
-                  </div>
-                </div>
-              </div>
-            </>
-          )}
-
-          {/* GESTIÓN */}
-          {vista === "gestion" && (
-            <div className="space-y-4">
-              <div className="bg-white rounded-xl shadow-lg p-6">
-                <h2 className="text-xl font-bold text-slate-800 mb-2">Gestión de cursos e hitos</h2>
-                <p className="text-sm text-slate-600 mb-6">Marca hitos completados. Con los 4 hitos, el curso avanza al siguiente estado automáticamente.</p>
-
-                {cursosFiltrados.length===0 ? (
-                  <div className="text-center py-12 text-slate-500">
-                    <Circle size={48} className="mx-auto mb-4 opacity-50"/>
-                    <p className="text-lg">No hay cursos que cumplan los filtros</p>
-                    <button onClick={limpiarFiltros} className="mt-4 px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">Limpiar filtros</button>
-                  </div>
-                ) : (
-                  <div className="space-y-3 max-h-screen overflow-y-auto scrollbar-thin">
-                    {cursosFiltrados.map((c) => {
-                      const idx = cursos.indexOf(c);
-                      const prog = progreso[idx] || { hitos: [false,false,false,false], estadoActual: c[COL.estado] };
-                      const estadoActual = prog.estadoActual || c[COL.estado];
-                      const hs = hitosCurso(estadoActual);
-                      const color = colorEstado(estadoActual);
-                      const done = prog.hitos.filter(Boolean).length;
-                      const expand = prog.expand || false;
-
-                      const toggleExpand = () => setProgreso(prev => ({ ...prev, [idx]: { ...(prev[idx]||prog), expand: !expand } }));
-
-                      return (
-                        <div key={idx} className="border-2 border-slate-200 rounded-lg overflow-hidden hover:shadow-md transition-all">
-                          <div className="p-4 bg-slate-50 cursor-pointer" onClick={toggleExpand}>
-                            <div className="flex items-center justify-between flex-wrap gap-4">
-                              <div className="flex-1">
-                                <h3 className="font-semibold text-slate-800 mb-2">{c[COL.nombre] || "Sin nombre"}</h3>
-                                <div className="flex flex-wrap gap-2 text-xs">
-                                  <span className="px-2 py-1 bg-purple-100 text-purple-700 rounded font-semibold">{c[COL.vp] || "Sin VP"}</span>
-                                  <span className="px-2 py-1 bg-white rounded border">{c[COL.gerencia] || "Sin gerencia"}</span>
-                                  <span className={classNames("px-3 py-1 rounded-full font-semibold", color)}>{estadoActual}</span>
-                                  <span className="px-2 py-1 bg-indigo-100 text-indigo-700 rounded">{c[COL.tipoPlan] || "Sin tipo"}</span>
-                                  <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded">{c[COL.modalidad] || "Sin modalidad"}</span>
-                                  <span className="px-2 py-1 bg-amber-100 text-amber-700 rounded">Año {c[COL.anio] || "N/A"}</span>
-                                </div>
-                              </div>
-                              <div className="flex items-center gap-4">
-                                <div className="text-center">
-                                  <div className="text-2xl font-bold text-blue-600">{done}/4</div>
-                                  <div className="text-xs text-slate-600">hitos</div>
-                                </div>
-                                <div className="text-2xl text-slate-400">{expand ? "▼" : "▶"}</div>
-                              </div>
-                            </div>
-                            <div className="mt-3 w-full bg-gray-200 rounded-full h-2 overflow-hidden">
-                              <div className="bg-gradient-to-r from-blue-500 to-blue-600 h-2 transition-all duration-300" style={{ width: `${(done/4)*100}%` }} />
-                            </div>
-                          </div>
-
-                          {expand && (
-                            <div className="p-6 bg-white border-t-2">
-                              <div className="mb-6 p-4 bg-slate-50 rounded-lg">
-                                <p className="text-sm text-slate-700 mb-3"><span className="font-semibold">Objetivo:</span> {c[COL.objetivo] || "Sin descripción"}</p>
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                                  <div><span className="font-semibold">Horas:</span> {c[COL.horas] || "0"}</div>
-                                  <div><span className="font-semibold">Participantes:</span> {c[COL.participantes] || "0"}</div>
-                                  <div><span className="font-semibold">OTEC:</span> {c[COL.otec] || "No asignado"}</div>
-                                  <div><span className="font-semibold">Responsable:</span> {c[COL.responsable] || "No asignado"}</div>
-                                </div>
-                              </div>
-
-                              <div className="mb-6">
-                                <h4 className="font-semibold text-slate-700 mb-4">Hitos del estado: {estadoActual}</h4>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                  {hs.map((h, i) => (
-                                    <div key={i}
-                                      className={classNames("p-4 rounded-lg border-2 transition-all cursor-pointer",
-                                        prog.hitos[i] ? "bg-green-50 border-green-500" : "bg-white border-slate-300 hover:border-blue-400")}
-                                      onClick={()=>toggleHito(idx, i)}
-                                    >
-                                      <div className="flex items-start gap-3">
-                                        <div className={classNames("w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0",
-                                          prog.hitos[i] ? "bg-green-500 border-green-500" : "bg-white border-slate-400")}>
-                                          {prog.hitos[i] && <Check size={16} className="text-white"/>}
-                                        </div>
-                                        <div className="flex-1">
-                                          <div className="text-xs font-semibold text-slate-500 mb-1">Hito {i+1}</div>
-                                          <p className="text-sm font-medium text-slate-700">{h}</p>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-
-                              <div className="flex gap-3 pt-4 border-t-2">
-                                <button onClick={()=>setEstadoEspecial(idx, "Suspendido")}
-                                  className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-red-100 text-red-700 border-2 border-red-300 rounded-lg font-semibold hover:bg-red-200 transition-all">
-                                  <X size={20}/> Suspender
-                                </button>
-                                <button onClick={()=>setEstadoEspecial(idx, "Postergado")}
-                                  className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-purple-100 text-purple-700 border-2 border-purple-300 rounded-lg font-semibold hover:bg-purple-200 transition-all">
-                                  <Clock size={20}/> Postergar
-                                </button>
-                              </div>
-
-                              {done===4 && (
-                                <div className="mt-4 p-4 bg-green-100 border-2 border-green-500 rounded-lg text-center">
-                                  <p className="text-green-800 font-semibold">✅ ¡Todos los hitos completados! Avanza automáticamente.</p>
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-        </div>
-      );
-    }
-
-    function Tile({ label, value, tone }) {
-      const palettes = {
-        gray: ["bg-gray-50","border-gray-300","text-gray-700","text-gray-600"],
-        blue: ["bg-blue-50","border-blue-300","text-blue-700","text-blue-600"],
-        yellow: ["bg-yellow-50","border-yellow-300","text-yellow-700","text-yellow-600"],
-        orange: ["bg-orange-50","border-orange-300","text-orange-700","text-orange-600"],
-        green: ["bg-green-50","border-green-300","text-green-700","text-green-600"],
-        red: ["bg-red-50","border-red-300","text-red-700","text-red-600"],
-        purple: ["bg-purple-50","border-purple-300","text-purple-700","text-purple-600"],
-        default: ["bg-slate-50","border-slate-200","text-slate-800","text-slate-600"],
-      }[tone||"default"];
-      return (
-        <div className={classNames("text-center p-4 rounded-lg border-2", palettes[0], palettes[1])}>
-          <p className={classNames("text-2xl font-bold", palettes[2])}>{value}</p>
-          <p className={classNames("text-sm", palettes[3])}>{label}</p>
-        </div>
-      );
-    }
-
-    // Render
-    const root = ReactDOM.createRoot(document.getElementById("root"));
-    root.render(<App/>);
-  </script>
+        // Renderizar la aplicación
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<SeguimientoCapacitaciones />);
+    </script>
 </body>
 </html>
