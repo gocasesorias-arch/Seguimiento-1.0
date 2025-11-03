@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Seguimiento de Capacitaciones — GitHub Pages</title>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body{background:linear-gradient(135deg,#f8fafc,#e2e8f0);margin:0;padding:0}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const {useState,useEffect,useMemo}=React;
+function App(){
+  const [data,setData]=useState([]);
+  const [loading,setLoading]=useState(true);
+  const [err,setErr]=useState(null);
+  useEffect(()=>{fetch("capacitaciones_data.json").then(r=>r.json()).then(j=>setData(j)).catch(setErr).finally(()=>setLoading(false));},[]);
+  const resumen=useMemo(()=>{
+    const t=data.length;
+    const c=s=>data.filter(x=>x["Estado Actividad"]===s).length;
+    const ejec=c("En Ejecución"),ok=c("Realizado");
+    return{t,pend:c("Pendiente"),plan:c("Planificado"),proc:c("En Proceso"),prog:c("Programado"),ejec,ok,susp:c("Suspendido"),post:c("Postergado"),pct:t?((ejec+ok)/t*100):0};
+  },[data]);
+  if(loading)return<div className="p-8 text-center text-lg text-gray-700">Cargando datos...</div>;
+  if(err)return<div className="p-8 text-center text-red-600">Error al cargar JSON</div>;
+  return(<div className="max-w-5xl mx-auto p-6">
+    <h1 className="text-3xl font-bold text-gray-800 mb-4">Seguimiento de Capacitaciones</h1>
+    <p className="text-gray-600 mb-6">Fuente: capacitaciones_data.json</p>
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div className="p-4 border rounded text-center"><b>{resumen.t}</b><div>Total</div></div>
+      <div className="p-4 border rounded text-center"><b>{resumen.pend}</b><div>Pendiente</div></div>
+      <div className="p-4 border rounded text-center"><b>{resumen.plan}</b><div>Planificado</div></div>
+      <div className="p-4 border rounded text-center"><b>{resumen.proc}</b><div>En Proceso</div></div>
+      <div className="p-4 border rounded text-center"><b>{resumen.prog}</b><div>Programado</div></div>
+      <div className="p-4 border rounded text-center"><b>{resumen.ejec}</b><div>En Ejecución</div></div>
+    </div>
+    <div className="grid grid-cols-2 gap-3 mt-4">
+      <div className="p-4 border rounded text-center"><b>{resumen.ok}</b><div>Realizado</div></div>
+      <div className="p-4 border rounded text-center"><b>{resumen.susp}</b><div>Suspendido</div></div>
+    </div>
+    <div className="mt-6 p-4 border rounded bg-white shadow">
+      <h2 className="font-semibold mb-2 text-gray-800">Avance del Plan</h2>
+      <div className="flex items-center justify-between mb-2"><span className="text-green-700 font-bold">{resumen.pct.toFixed(1)}%</span></div>
+      <div className="w-full bg-gray-200 rounded-full h-4"><div className="bg-green-500 h-4 rounded-full" style={{width:`${resumen.pct}%`}}></div></div>
+    </div>
+  </div>);
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
