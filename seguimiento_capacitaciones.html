@@ -71,30 +71,6 @@
             </svg>
         );
 
-        const Download = ({ size = 24, className = "" }) => (
-            <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" className={className}>
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                <polyline points="7 10 12 15 17 10"/>
-                <line x1="12" y1="15" x2="12" y2="3"/>
-            </svg>
-        );
-
-        // ✅ CORRECCIÓN 1: Mapeo correcto de columnas según tu JSON real
-        const COL = Object.freeze({
-            anio: 'Año',
-            estado: 'Estado Actividad', 
-            responsable: 'Usuario Responsable Capacitación CMDIC',
-            vp: 'VP',
-            gerencia: 'Gerencia',
-            tipoPlan: 'Tipo de Plan',
-            nombre: 'Nombre Curso',
-            objetivo: 'Objetivo Curso',
-            horas: 'Horas Curso',
-            otec: 'OTEC Sugerido',
-            modalidad: 'Modalidad',
-            participantes: 'Total Participantes Programados'
-        });
-
         const SeguimientoCapacitaciones = () => {
             const [cursos, setCursos] = useState([]);
             const [hitoActual, setHitoActual] = useState(0);
@@ -117,7 +93,6 @@
             const [cursoExpandido, setCursoExpandido] = useState(null);
             const [cargando, setCargando] = useState(true);
             const [mostrarFiltros, setMostrarFiltros] = useState(true);
-            const [textoBusqueda, setTextoBusqueda] = useState('');
 
             // Definición de estados con sus hitos progresivos
             const hitos = [
@@ -137,14 +112,14 @@
                 },
                 {
                     id: 1,
-                    nombre: "Planificado", 
+                    nombre: "Planificado",
                     estado: "Planificado",
                     descripcion: "Búsqueda y selección de proveedor",
-                    icon: Download,
+                    icon: CheckCircle,
                     color: "bg-blue-100 border-blue-400 text-blue-700",
                     subHitos: [
                         "Solicitar propuestas técnicas y económicas a proveedores",
-                        "Elaboración de matriz comparativa y propuesta final", 
+                        "Elaboración de matriz comparativa y propuesta final",
                         "Selección o validación propuesta con líderes de proceso",
                         "Asignación de presupuesto"
                     ]
@@ -152,14 +127,14 @@
                 {
                     id: 2,
                     nombre: "En Proceso",
-                    estado: "En Proceso", 
+                    estado: "En Proceso",
                     descripcion: "Preparación de logística y fechas",
                     icon: Clock,
                     color: "bg-indigo-100 border-indigo-400 text-indigo-700",
                     subHitos: [
                         "Revisión de turnos y condiciones operativas",
                         "Estructuración de fechas de ejecución",
-                        "Validación final de nóminas", 
+                        "Validación final de nóminas",
                         "Preparación de materiales y recursos"
                     ]
                 },
@@ -167,7 +142,7 @@
                     id: 3,
                     nombre: "Programado",
                     estado: "Programado",
-                    descripcion: "Coordinación pre-ejecución con todos los actores", 
+                    descripcion: "Coordinación pre-ejecución con todos los actores",
                     icon: Clock,
                     color: "bg-yellow-100 border-yellow-500 text-yellow-800",
                     subHitos: [
@@ -182,7 +157,7 @@
                     nombre: "En Ejecución",
                     estado: "En Ejecución",
                     descripcion: "Curso en desarrollo - Supervisión activa",
-                    icon: Clock, 
+                    icon: Clock,
                     color: "bg-orange-100 border-orange-500 text-orange-700",
                     subHitos: [
                         "Supervisar y verificar la ejecución efectiva de las actividades",
@@ -197,7 +172,7 @@
                     estado: "Realizado",
                     descripcion: "Cierre y documentación del curso",
                     icon: CheckCircle,
-                    color: "bg-green-100 border-green-500 text-green-700", 
+                    color: "bg-green-100 border-green-500 text-green-700",
                     subHitos: [
                         "Verificar y subir registro asistencia en Clikma",
                         "Recopilación de evaluaciones de satisfacción",
@@ -219,7 +194,7 @@
                 },
                 {
                     nombre: "Postergado",
-                    estado: "Postergado", 
+                    estado: "Postergado",
                     descripcion: "Cursos movidos a fechas futuras",
                     icon: Circle,
                     color: "bg-purple-100 border-purple-400 text-purple-700",
@@ -228,53 +203,56 @@
             ];
 
             useEffect(() => {
-                const cargarDatos = async () => {
+                setTimeout(() => {
                     try {
-                        const response = await fetch('capacitaciones_data.json');
-                        if (!response.ok) throw new Error('Error al cargar datos');
-                        const datos = await response.json();
-                        
-                        // ✅ CORRECCIÓN 2: Ya no usar slice(1) - el JSON viene limpio
-                        setCursos(datos);
-                        
-                        // Extraer opciones para todos los filtros
-                        const vpsUnicas = ['Todos', ...new Set(datos.map(c => c[COL.vp]).filter(Boolean))].sort();
-                        const gerenciasUnicas = ['Todas', ...new Set(datos.map(c => c[COL.gerencia]).filter(Boolean))].sort();
-                        const tiposPlanUnicos = ['Todos', ...new Set(datos.map(c => c[COL.tipoPlan]).filter(Boolean))].sort();
-                        const añosUnicos = ['Todos', ...new Set(datos.map(c => String(c[COL.anio])).filter(Boolean))].sort();
-                        const responsablesUnicos = ['Todos', ...new Set(datos.map(c => c[COL.responsable]).filter(Boolean))].sort();
-                        
-                        setOpcionesFiltros({
-                            vps: vpsUnicas,
-                            gerencias: gerenciasUnicas,
-                            tiposPlan: tiposPlanUnicos,
-                            años: añosUnicos,
-                            responsables: responsablesUnicos
-                        });
-                        
-                        // Inicializar progreso
-                        const progresoGuardado = localStorage.getItem('progresoHitos');
-                        if (progresoGuardado) {
-                            setProgresoHitos(JSON.parse(progresoGuardado));
-                        } else {
-                            const nuevoProgreso = {};
-                            datos.forEach((curso, index) => {
-                                nuevoProgreso[index] = {
-                                    hitos: [false, false, false, false],
-                                    estadoActual: curso[COL.estado]
-                                };
+                        console.log('Verificando window.cursosData...', window.cursosData ? `${window.cursosData.length} registros` : 'No definido');
+
+                        if (window.cursosData && window.cursosData.length > 0) {
+                            const cursosData = window.cursosData.slice(1);
+                            console.log('Datos procesados:', cursosData.length, 'cursos');
+                            setCursos(cursosData);
+
+                            // Extraer opciones para todos los filtros
+                            const vpsUnicas = ['Todos', ...new Set(cursosData.map(c => c.Column9).filter(Boolean))].sort();
+                            const gerenciasUnicas = ['Todas', ...new Set(cursosData.map(c => c.Column10).filter(Boolean))].sort();
+                            const tiposPlanUnicos = ['Todos', ...new Set(cursosData.map(c => c.Column11).filter(Boolean))].sort();
+                            const añosUnicos = ['Todos', ...new Set(cursosData.map(c => String(c.Column2)).filter(Boolean))].sort();
+                            const responsablesUnicos = ['Todos', ...new Set(cursosData.map(c => c.Column7).filter(Boolean))].sort();
+
+                            setOpcionesFiltros({
+                                vps: vpsUnicas,
+                                gerencias: gerenciasUnicas,
+                                tiposPlan: tiposPlanUnicos,
+                                años: añosUnicos,
+                                responsables: responsablesUnicos
                             });
-                            setProgresoHitos(nuevoProgreso);
+
+                            // Inicializar progreso
+                            const progresoGuardado = localStorage.getItem('progresoHitos');
+                            if (progresoGuardado) {
+                                setProgresoHitos(JSON.parse(progresoGuardado));
+                            } else {
+                                const nuevoProgreso = {};
+                                cursosData.forEach((curso, index) => {
+                                    nuevoProgreso[index] = {
+                                        hitos: [false, false, false, false],
+                                        estadoActual: curso.Column4
+                                    };
+                                });
+                                setProgresoHitos(nuevoProgreso);
+                            }
+
+                            setCargando(false);
+                            console.log('Datos cargados exitosamente');
+                        } else {
+                            console.error('window.cursosData no está disponible o está vacío');
+                            setCargando(false);
                         }
-                        
-                        setCargando(false);
                     } catch (error) {
                         console.error('Error cargando datos:', error);
                         setCargando(false);
                     }
-                };
-
-                cargarDatos();
+                }, 100);
             }, []);
 
             useEffect(() => {
@@ -285,18 +263,13 @@
 
             // Función para aplicar todos los filtros
             const aplicarFiltros = (curso) => {
-                // Filtro de búsqueda de texto
-                const textoMatch = !textoBusqueda || 
-                    [COL.nombre, COL.objetivo, COL.vp, COL.gerencia, COL.tipoPlan, COL.modalidad]
-                        .some(campo => String(curso[campo] || '').toLowerCase().includes(textoBusqueda.toLowerCase()));
+                const cumpleVP = filtros.vp === 'Todos' || curso.Column9 === filtros.vp;
+                const cumpleGerencia = filtros.gerencia === 'Todas' || curso.Column10 === filtros.gerencia;
+                const cumpleTipoPlan = filtros.tipoPlan === 'Todos' || curso.Column11 === filtros.tipoPlan;
+                const cumpleAño = filtros.año === 'Todos' || String(curso.Column2) === filtros.año;
+                const cumpleResponsable = filtros.responsable === 'Todos' || curso.Column7 === filtros.responsable;
                 
-                const cumpleVP = filtros.vp === 'Todos' || curso[COL.vp] === filtros.vp;
-                const cumpleGerencia = filtros.gerencia === 'Todas' || curso[COL.gerencia] === filtros.gerencia;
-                const cumpleTipoPlan = filtros.tipoPlan === 'Todos' || curso[COL.tipoPlan] === filtros.tipoPlan;
-                const cumpleAño = filtros.año === 'Todos' || String(curso[COL.anio]) === filtros.año;
-                const cumpleResponsable = filtros.responsable === 'Todos' || curso[COL.responsable] === filtros.responsable;
-                
-                return textoMatch && cumpleVP && cumpleGerencia && cumpleTipoPlan && cumpleAño && cumpleResponsable;
+                return cumpleVP && cumpleGerencia && cumpleTipoPlan && cumpleAño && cumpleResponsable;
             };
 
             const actualizarFiltro = (campo, valor) => {
@@ -314,7 +287,6 @@
                     año: 'Todos',
                     responsable: 'Todos'
                 });
-                setTextoBusqueda('');
             };
 
             const toggleHito = (cursoIndex, hitoIndex) => {
@@ -323,7 +295,7 @@
                     if (!nuevo[cursoIndex]) {
                         nuevo[cursoIndex] = {
                             hitos: [false, false, false, false],
-                            estadoActual: cursos[cursoIndex][COL.estado]
+                            estadoActual: cursos[cursoIndex].Column4
                         };
                     }
                     
@@ -331,7 +303,7 @@
                     
                     const todosCompletados = nuevo[cursoIndex].hitos.every(h => h === true);
                     if (todosCompletados) {
-                        const estadoActual = nuevo[cursoIndex].estadoActual || cursos[cursoIndex][COL.estado];
+                        const estadoActual = nuevo[cursoIndex].estadoActual || cursos[cursoIndex].Column4;
                         const indexEstadoActual = hitos.findIndex(h => h.estado === estadoActual);
                         if (indexEstadoActual !== -1 && indexEstadoActual < hitos.length - 1) {
                             const nuevoEstado = hitos[indexEstadoActual + 1].estado;
@@ -342,7 +314,7 @@
                                 const nuevoCursos = [...prevCursos];
                                 nuevoCursos[cursoIndex] = {
                                     ...nuevoCursos[cursoIndex],
-                                    [COL.estado]: nuevoEstado
+                                    Column4: nuevoEstado
                                 };
                                 return nuevoCursos;
                             });
@@ -359,7 +331,7 @@
                     if (!nuevo[cursoIndex]) {
                         nuevo[cursoIndex] = {
                             hitos: [false, false, false, false],
-                            estadoActual: cursos[cursoIndex][COL.estado]
+                            estadoActual: cursos[cursoIndex].Column4
                         };
                     }
                     nuevo[cursoIndex].estadoActual = nuevoEstado;
@@ -371,7 +343,7 @@
                     const nuevoCursos = [...prevCursos];
                     nuevoCursos[cursoIndex] = {
                         ...nuevoCursos[cursoIndex],
-                        [COL.estado]: nuevoEstado
+                        Column4: nuevoEstado
                     };
                     return nuevoCursos;
                 });
@@ -387,38 +359,6 @@
                 return hitoEncontrado ? hitoEncontrado.color : 'bg-gray-100 border-gray-400 text-gray-700';
             };
 
-            const exportarCSV = () => {
-                const headers = ['Año', 'Estado', 'Responsable', 'VP', 'Gerencia', 'Tipo Plan', 'Nombre', 'Objetivo', 'Horas', 'OTEC', 'Modalidad', 'Participantes'];
-                const rows = cursosFiltradosGestion.map(curso => [
-                    curso[COL.anio],
-                    curso[COL.estado],
-                    curso[COL.responsable],
-                    curso[COL.vp],
-                    curso[COL.gerencia],
-                    curso[COL.tipoPlan],
-                    curso[COL.nombre],
-                    (curso[COL.objetivo] || '').replace(/\n/g, ' '),
-                    curso[COL.horas],
-                    curso[COL.otec],
-                    curso[COL.modalidad],
-                    curso[COL.participantes]
-                ]);
-                
-                const csvContent = [headers, ...rows]
-                    .map(row => row.map(field => `"${String(field || '').replace(/"/g, '""')}"`).join(','))
-                    .join('\n');
-                
-                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-                const link = document.createElement('a');
-                const url = URL.createObjectURL(blob);
-                link.setAttribute('href', url);
-                link.setAttribute('download', 'capacitaciones_filtradas.csv');
-                link.style.visibility = 'hidden';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            };
-
             if (cargando) {
                 return (
                     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
@@ -430,35 +370,40 @@
                 );
             }
 
+            // Verificar si hay datos disponibles
+            if (!cursos || cursos.length === 0) {
+                return (
+                    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
+                        <div className="text-center bg-white rounded-xl shadow-lg p-8 max-w-md">
+                            <XCircle size={64} className="text-red-500 mx-auto mb-4" />
+                            <h2 className="text-2xl font-bold text-slate-800 mb-2">Error al cargar datos</h2>
+                            <p className="text-slate-600 mb-4">
+                                No se pudieron cargar los datos de capacitaciones.
+                            </p>
+                            <p className="text-sm text-slate-500 mb-4">
+                                Verifica que el archivo cursos_data_inline.js esté en la misma carpeta que este archivo HTML.
+                            </p>
+                            <button
+                                onClick={() => window.location.reload()}
+                                className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                            >
+                                Recargar página
+                            </button>
+                        </div>
+                    </div>
+                );
+            }
+
             const hitoActualData = hitos[hitoActual];
             
             // Aplicar filtros
             const cursosFiltrados = cursos.filter(curso => {
-                const cumpleEstado = vistaActual === 'dashboard' ? curso[COL.estado] === hitoActualData.estado : true;
+                const cumpleEstado = vistaActual === 'dashboard' ? curso.Column4 === hitoActualData.estado : true;
                 const cumpleFiltros = aplicarFiltros(curso);
                 return cumpleEstado && cumpleFiltros;
             });
 
             const cursosFiltradosGestion = cursos.filter(aplicarFiltros);
-
-            // ✅ CORRECCIÓN 3: Cálculo correcto del porcentaje de avance
-            const resumen = useMemo(() => {
-                const total = cursosFiltradosGestion.length;
-                const count = (estado) => cursosFiltradosGestion.filter(c => c[COL.estado] === estado).length;
-                
-                return {
-                    total,
-                    pendiente: count('Pendiente'),
-                    planificado: count('Planificado'),
-                    preparacion: count('En Proceso') + count('Programado'),
-                    ejecucion: count('En Ejecución'),
-                    realizado: count('Realizado'),
-                    suspendido: count('Suspendido'),
-                    postergado: count('Postergado'),
-                    // ✅ Aquí la corrección: En Ejecución + Realizado
-                    porcentaje: total ? ((count('En Ejecución') + count('Realizado')) / total) * 100 : 0
-                };
-            }, [cursosFiltradosGestion]);
 
             const avanzarHito = () => {
                 if (hitoActual < hitos.length - 1) {
@@ -496,17 +441,6 @@
 
                     {mostrarFiltros && (
                         <>
-                            {/* Búsqueda por texto */}
-                            <div className="mb-4">
-                                <input
-                                    type="text"
-                                    placeholder="Buscar por nombre, objetivo, VP, gerencia..."
-                                    value={textoBusqueda}
-                                    onChange={(e) => setTextoBusqueda(e.target.value)}
-                                    className="w-full px-4 py-2 border-2 border-slate-300 rounded-lg focus:border-blue-500 focus:outline-none"
-                                />
-                            </div>
-
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
                                 {/* Filtro VP */}
                                 <div>
@@ -580,10 +514,10 @@
                                     </select>
                                 </div>
 
-                                {/* Filtro Responsable */}
+                                {/* Filtro PDC Responsable OTIC */}
                                 <div>
                                     <label className="block text-sm font-semibold text-slate-700 mb-2">
-                                        Responsable
+                                        PDC Responsable OTIC
                                     </label>
                                     <select
                                         value={filtros.responsable}
@@ -598,20 +532,13 @@
                                     </select>
                                 </div>
 
-                                {/* Botones de acción */}
-                                <div className="flex items-end gap-2">
+                                {/* Botón Limpiar */}
+                                <div className="flex items-end">
                                     <button
                                         onClick={limpiarFiltros}
-                                        className="flex-1 px-4 py-2 bg-red-100 text-red-700 border-2 border-red-300 rounded-lg font-semibold hover:bg-red-200 transition-all"
+                                        className="w-full px-4 py-2 bg-red-100 text-red-700 border-2 border-red-300 rounded-lg font-semibold hover:bg-red-200 transition-all"
                                     >
-                                        🗑️ Limpiar
-                                    </button>
-                                    <button
-                                        onClick={exportarCSV}
-                                        className="flex-1 px-4 py-2 bg-green-100 text-green-700 border-2 border-green-300 rounded-lg font-semibold hover:bg-green-200 transition-all flex items-center justify-center gap-2"
-                                    >
-                                        <Download size={16} />
-                                        CSV
+                                        🗑️ Limpiar Filtros
                                     </button>
                                 </div>
                             </div>
@@ -621,7 +548,7 @@
                                 <div className="text-sm text-slate-700">
                                     <span className="font-semibold">Filtros activos:</span>
                                     {' '}
-                                    {Object.values(filtros).filter(v => v !== 'Todos' && v !== 'Todas').length + (textoBusqueda ? 1 : 0)}
+                                    {Object.values(filtros).filter(v => v !== 'Todos' && v !== 'Todas').length}
                                 </div>
                                 <div className="text-lg font-bold text-blue-700">
                                     {vistaActual === 'dashboard' ? cursosFiltrados.length : cursosFiltradosGestion.length} cursos
@@ -631,27 +558,6 @@
                     )}
                 </div>
             );
-
-            // Componente Tile para estadísticas
-            const Tile = ({ label, value, tone = 'default' }) => {
-                const palettes = {
-                    gray: ['bg-gray-50', 'border-gray-300', 'text-gray-700', 'text-gray-600'],
-                    blue: ['bg-blue-50', 'border-blue-300', 'text-blue-700', 'text-blue-600'],
-                    yellow: ['bg-yellow-50', 'border-yellow-300', 'text-yellow-700', 'text-yellow-600'],
-                    orange: ['bg-orange-50', 'border-orange-300', 'text-orange-700', 'text-orange-600'],
-                    green: ['bg-green-50', 'border-green-300', 'text-green-700', 'text-green-600'],
-                    red: ['bg-red-50', 'border-red-300', 'text-red-700', 'text-red-600'],
-                    purple: ['bg-purple-50', 'border-purple-300', 'text-purple-700', 'text-purple-600'],
-                    default: ['bg-slate-50', 'border-slate-200', 'text-slate-800', 'text-slate-600'],
-                }[tone];
-
-                return (
-                    <div className={`text-center p-4 rounded-lg border-2 ${palettes[0]} ${palettes[1]}`}>
-                        <p className={`text-2xl font-bold ${palettes[2]}`}>{value}</p>
-                        <p className={`text-sm ${palettes[3]}`}>{label}</p>
-                    </div>
-                );
-            };
 
             return (
                 <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
@@ -670,7 +576,7 @@
                                 <div className="flex gap-3">
                                     <button
                                         onClick={() => setVistaActual('dashboard')}
-                                        className={`px-6 py-3 rounded-lg font-semibold transition-all ${
+                                        className={`px-6 py-3 rounded-lg font-semibold transition-all $${
                                             vistaActual === 'dashboard'
                                                 ? 'bg-blue-600 text-white shadow-lg'
                                                 : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
@@ -703,10 +609,10 @@
                                     <h2 className="text-lg font-semibold text-slate-700 mb-4">
                                         Progreso de Estados
                                     </h2>
-                                    <div className="flex items-center justify-between mb-4 overflow-x-auto scrollbar-thin">
+                                    <div className="flex items-center justify-between mb-4 overflow-x-auto">
                                         {hitos.map((hito, index) => {
                                             const Icon = hito.icon;
-                                            const cursosFiltradosEstado = cursos.filter(c => c[COL.estado] === hito.estado && aplicarFiltros(c));
+                                            const cursosFiltradosEstado = cursos.filter(c => c.Column4 === hito.estado && aplicarFiltros(c));
                                             return (
                                                 <div key={hito.id} className="flex items-center flex-1 min-w-max">
                                                     <button
@@ -754,7 +660,7 @@
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         {estadosEspeciales.map((especial, index) => {
                                             const IconEspecial = especial.icon;
-                                            const cursosEspecial = cursos.filter(c => c[COL.estado] === especial.estado && aplicarFiltros(c));
+                                            const cursosEspecial = cursos.filter(c => c.Column4 === especial.estado && aplicarFiltros(c));
                                             
                                             return (
                                                 <div
@@ -859,36 +765,36 @@
                                             <p className="text-lg">No hay cursos que cumplan los filtros seleccionados</p>
                                         </div>
                                     ) : (
-                                        <div className="space-y-3 max-h-96 overflow-y-auto scrollbar-thin">
+                                        <div className="space-y-3 max-h-96 overflow-y-auto">
                                             {cursosFiltrados.map((curso, index) => (
                                                 <div
                                                     key={index}
                                                     className="p-4 border-2 border-slate-200 rounded-lg hover:border-blue-400 transition-all hover:shadow-md"
                                                 >
                                                     <h4 className="font-semibold text-slate-800 mb-1">
-                                                        {curso[COL.nombre] || 'Sin nombre'}
+                                                        {curso.Column13 || 'Sin nombre'}
                                                     </h4>
                                                     <p className="text-sm text-slate-600 mb-2">
-                                                        {curso[COL.objetivo] || 'Sin descripción'}
+                                                        {curso.Column14 || 'Sin descripción'}
                                                     </p>
                                                     <div className="flex flex-wrap gap-2 text-xs">
                                                         <span className="px-2 py-1 bg-purple-100 text-purple-700 rounded">
-                                                            {curso[COL.vp] || 'Sin VP'}
+                                                            {curso.Column9 || 'Sin VP'}
                                                         </span>
                                                         <span className="px-2 py-1 bg-slate-100 rounded">
-                                                            {curso[COL.gerencia] || 'Sin gerencia'}
+                                                            {curso.Column10 || 'Sin gerencia'}
                                                         </span>
                                                         <span className="px-2 py-1 bg-indigo-100 text-indigo-700 rounded">
-                                                            {curso[COL.tipoPlan] || 'Sin tipo'}
+                                                            {curso.Column11 || 'Sin tipo'}
                                                         </span>
                                                         <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded">
-                                                            {curso[COL.modalidad] || 'Sin modalidad'}
+                                                            {curso.Column21 || 'Sin modalidad'}
                                                         </span>
                                                         <span className="px-2 py-1 bg-green-100 text-green-700 rounded">
-                                                            {curso[COL.horas] || '0'} horas
+                                                            {curso.Column15 || '0'} horas
                                                         </span>
                                                         <span className="px-2 py-1 bg-orange-100 text-orange-700 rounded">
-                                                            {curso[COL.participantes] || '0'} participantes
+                                                            {curso['18348'] || '0'} participantes
                                                         </span>
                                                     </div>
                                                 </div>
@@ -903,29 +809,68 @@
                                         Resumen General (con filtros aplicados)
                                     </h3>
                                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-                                        <Tile label="Total" value={resumen.total} />
-                                        <Tile label="Pendientes" value={resumen.pendiente} tone="gray" />
-                                        <Tile label="Planificados" value={resumen.planificado} tone="blue" />
-                                        <Tile label="Preparación" value={resumen.preparacion} tone="yellow" />
-                                        <Tile label="En Ejecución" value={resumen.ejecucion} tone="orange" />
-                                        <Tile label="Realizados" value={resumen.realizado} tone="green" />
+                                        <div className="text-center p-4 bg-slate-50 rounded-lg border-2 border-slate-200">
+                                            <p className="text-2xl font-bold text-slate-800">{cursosFiltradosGestion.length}</p>
+                                            <p className="text-sm text-slate-600">Total</p>
+                                        </div>
+                                        <div className="text-center p-4 bg-gray-50 rounded-lg border-2 border-gray-300">
+                                            <p className="text-2xl font-bold text-gray-700">
+                                                {cursosFiltradosGestion.filter(c => c.Column4 === 'Pendiente').length}
+                                            </p>
+                                            <p className="text-sm text-gray-600">Pendientes</p>
+                                        </div>
+                                        <div className="text-center p-4 bg-blue-50 rounded-lg border-2 border-blue-300">
+                                            <p className="text-2xl font-bold text-blue-700">
+                                                {cursosFiltradosGestion.filter(c => c.Column4 === 'Planificado').length}
+                                            </p>
+                                            <p className="text-sm text-blue-600">Planificados</p>
+                                        </div>
+                                        <div className="text-center p-4 bg-yellow-50 rounded-lg border-2 border-yellow-300">
+                                            <p className="text-2xl font-bold text-yellow-700">
+                                                {cursosFiltradosGestion.filter(c => c.Column4 === 'En Proceso' || c.Column4 === 'Programado').length}
+                                            </p>
+                                            <p className="text-sm text-yellow-600">Preparación</p>
+                                        </div>
+                                        <div className="text-center p-4 bg-orange-50 rounded-lg border-2 border-orange-300">
+                                            <p className="text-2xl font-bold text-orange-700">
+                                                {cursosFiltradosGestion.filter(c => c.Column4 === 'En Ejecución').length}
+                                            </p>
+                                            <p className="text-sm text-orange-600">En Ejecución</p>
+                                        </div>
+                                        <div className="text-center p-4 bg-green-50 rounded-lg border-2 border-green-300">
+                                            <p className="text-2xl font-bold text-green-700">
+                                                {cursosFiltradosGestion.filter(c => c.Column4 === 'Realizado').length}
+                                            </p>
+                                            <p className="text-sm text-green-600">Realizados</p>
+                                        </div>
                                     </div>
+
                                     <div className="grid grid-cols-2 gap-4 mt-4">
-                                        <Tile label="Suspendidos" value={resumen.suspendido} tone="red" />
-                                        <Tile label="Postergados" value={resumen.postergado} tone="purple" />
+                                        <div className="text-center p-4 bg-red-50 rounded-lg border-2 border-red-300">
+                                            <p className="text-2xl font-bold text-red-700">
+                                                {cursosFiltradosGestion.filter(c => c.Column4 === 'Suspendido').length}
+                                            </p>
+                                            <p className="text-sm text-red-600">Suspendidos</p>
+                                        </div>
+                                        <div className="text-center p-4 bg-purple-50 rounded-lg border-2 border-purple-300">
+                                            <p className="text-2xl font-bold text-purple-700">
+                                                {cursosFiltradosGestion.filter(c => c.Column4 === 'Postergado').length}
+                                            </p>
+                                            <p className="text-sm text-purple-600">Postergados</p>
+                                        </div>
                                     </div>
 
                                     <div className="mt-6 p-4 bg-gradient-to-r from-blue-50 to-green-50 rounded-lg border-2 border-blue-200">
                                         <div className="flex items-center justify-between mb-2">
                                             <h4 className="font-semibold text-slate-700">Porcentaje de Completitud</h4>
                                             <span className="text-2xl font-bold text-green-700">
-                                                {resumen.porcentaje.toFixed(1)}%
+                                                {cursosFiltradosGestion.length > 0 ? ((cursosFiltradosGestion.filter(c => c.Column4 === 'Realizado').length / cursosFiltradosGestion.length) * 100).toFixed(1) : 0}%
                                             </span>
                                         </div>
                                         <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
                                             <div 
                                                 className="bg-gradient-to-r from-green-500 to-green-600 h-4 transition-all duration-500"
-                                                style={{ width: `${resumen.porcentaje}%` }}
+                                                style={{ width: `${cursosFiltradosGestion.length > 0 ? (cursosFiltradosGestion.filter(c => c.Column4 === 'Realizado').length / cursosFiltradosGestion.length) * 100 : 0}%` }}
                                             />
                                         </div>
                                     </div>
@@ -957,14 +902,14 @@
                                             </button>
                                         </div>
                                     ) : (
-                                        <div className="space-y-3 max-h-screen overflow-y-auto scrollbar-thin">
+                                        <div className="space-y-3 max-h-screen overflow-y-auto">
                                             {cursosFiltradosGestion.map((curso) => {
                                                 const cursoOriginalIndex = cursos.indexOf(curso);
                                                 const progreso = progresoHitos[cursoOriginalIndex] || {
                                                     hitos: [false, false, false, false],
-                                                    estadoActual: curso[COL.estado]
+                                                    estadoActual: curso.Column4
                                                 };
-                                                const estadoActual = progreso.estadoActual || curso[COL.estado];
+                                                const estadoActual = progreso.estadoActual || curso.Column4;
                                                 const hitosEstado = obtenerHitosPorEstado(estadoActual);
                                                 const colorEstado = obtenerColorPorEstado(estadoActual);
                                                 const hitosCompletados = progreso.hitos.filter(h => h).length;
@@ -983,26 +928,26 @@
                                                             <div className="flex items-center justify-between flex-wrap gap-4">
                                                                 <div className="flex-1">
                                                                     <h3 className="font-semibold text-slate-800 mb-2">
-                                                                        {curso[COL.nombre] || 'Sin nombre'}
+                                                                        {curso.Column13 || 'Sin nombre'}
                                                                     </h3>
                                                                     <div className="flex flex-wrap gap-2 text-xs">
                                                                         <span className="px-2 py-1 bg-purple-100 text-purple-700 rounded font-semibold">
-                                                                            {curso[COL.vp] || 'Sin VP'}
+                                                                            {curso.Column9 || 'Sin VP'}
                                                                         </span>
                                                                         <span className="px-2 py-1 bg-white rounded border">
-                                                                            {curso[COL.gerencia] || 'Sin gerencia'}
+                                                                            {curso.Column10 || 'Sin gerencia'}
                                                                         </span>
                                                                         <span className={`px-3 py-1 rounded-full font-semibold ${colorEstado}`}>
                                                                             {estadoActual}
                                                                         </span>
                                                                         <span className="px-2 py-1 bg-indigo-100 text-indigo-700 rounded">
-                                                                            {curso[COL.tipoPlan] || 'Sin tipo'}
+                                                                            {curso.Column11 || 'Sin tipo'}
                                                                         </span>
                                                                         <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded">
-                                                                            {curso[COL.modalidad] || 'Sin modalidad'}
+                                                                            {curso.Column21 || 'Sin modalidad'}
                                                                         </span>
                                                                         <span className="px-2 py-1 bg-amber-100 text-amber-700 rounded">
-                                                                            Año {curso[COL.anio] || 'N/A'}
+                                                                            Año {curso.Column2 || 'N/A'}
                                                                         </span>
                                                                     </div>
                                                                 </div>
@@ -1032,20 +977,20 @@
                                                                 {/* Info adicional */}
                                                                 <div className="mb-6 p-4 bg-slate-50 rounded-lg">
                                                                     <p className="text-sm text-slate-700 mb-3">
-                                                                        <span className="font-semibold">Objetivo:</span> {curso[COL.objetivo] || 'Sin descripción'}
+                                                                        <span className="font-semibold">Objetivo:</span> {curso.Column14 || 'Sin descripción'}
                                                                     </p>
                                                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                                                                         <div>
-                                                                            <span className="font-semibold">Horas:</span> {curso[COL.horas] || '0'}
+                                                                            <span className="font-semibold">Horas:</span> {curso.Column15 || '0'}
                                                                         </div>
                                                                         <div>
-                                                                            <span className="font-semibold">Participantes:</span> {curso[COL.participantes] || '0'}
+                                                                            <span className="font-semibold">Participantes:</span> {curso['18348'] || '0'}
                                                                         </div>
                                                                         <div>
-                                                                            <span className="font-semibold">OTEC:</span> {curso[COL.otec] || 'No asignado'}
+                                                                            <span className="font-semibold">OTEC:</span> {curso.Column20 || 'No asignado'}
                                                                         </div>
                                                                         <div>
-                                                                            <span className="font-semibold">Responsable:</span> {curso[COL.responsable] || 'No asignado'}
+                                                                            <span className="font-semibold">Responsable:</span> {curso.Column7 || 'No asignado'}
                                                                         </div>
                                                                     </div>
                                                                 </div>

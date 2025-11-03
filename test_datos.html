@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test - Carga de Datos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-box {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+    </style>
+</head>
+<body>
+    <div class="test-box">
+        <h1>Test de Carga de Datos</h1>
+        <div id="resultados"></div>
+    </div>
+
+    <!-- Cargar el archivo de datos -->
+    <script src="cursos_data_inline.js"></script>
+
+    <script>
+        const resultados = document.getElementById('resultados');
+
+        function addResult(message, className) {
+            const p = document.createElement('p');
+            p.textContent = message;
+            p.className = className;
+            resultados.appendChild(p);
+        }
+
+        // Verificar que window.cursosData existe
+        if (typeof window.cursosData !== 'undefined') {
+            addResult('✓ window.cursosData está definido', 'success');
+
+            if (Array.isArray(window.cursosData)) {
+                addResult(`✓ window.cursosData es un array`, 'success');
+                addResult(`✓ Total de registros: ${window.cursosData.length}`, 'info');
+
+                if (window.cursosData.length > 0) {
+                    addResult('✓ El array contiene datos', 'success');
+
+                    // Mostrar una muestra del primer registro
+                    const primerRegistro = window.cursosData[0];
+                    addResult('Primer registro:', 'info');
+                    addResult(JSON.stringify(primerRegistro, null, 2), 'info');
+
+                    addResult('✓ TODOS LOS TESTS PASARON - Los datos se cargaron correctamente', 'success');
+                } else {
+                    addResult('✗ El array está vacío', 'error');
+                }
+            } else {
+                addResult('✗ window.cursosData no es un array', 'error');
+            }
+        } else {
+            addResult('✗ window.cursosData NO está definido', 'error');
+            addResult('El archivo cursos_data_inline.js no se cargó correctamente', 'error');
+            addResult('Verifica que el archivo esté en la misma carpeta', 'error');
+        }
+    </script>
+</body>
+</html>
