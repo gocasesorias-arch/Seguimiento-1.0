@@ -64,11 +64,16 @@
     const App = () => {
       const canonicalKeys = useMemo(() => (window.cursosData?.[0] ? Object.keys(window.cursosData[0]) : []), []);
       const [cursos, setCursos] = useState(() => {
+        // Prioridad: siempre cargar desde el archivo del repositorio primero
+        if (window.cursosData && window.cursosData.length > 0) {
+          return window.cursosData;
+        }
+        // Solo usar localStorage como fallback si el archivo no está disponible
         const guardado = localStorage.getItem('cursosDataCache');
         if (guardado) {
           try { return JSON.parse(guardado); } catch(e) { /* ignore */ }
         }
-        return window.cursosData || [];
+        return [];
       });
 
       const filtrosIniciales = {
