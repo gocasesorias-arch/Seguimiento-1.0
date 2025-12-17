@@ -106,7 +106,7 @@
         const añoValores = ['Todos', ...new Set(registros.map(r => String(r['Año'])).filter(Boolean))];
         const responsables = ['Todos', ...new Set(registros.map(r => r['PDC Responsable OTIC']).filter(Boolean))];
         const nombres = [...new Set(registros.map(r => r['Nombre Curso']).filter(Boolean))];
-        const meses = ['Todos', ...new Set(registros.map(r => (r['Mes Inicio '] || '').trim()).filter(Boolean))];
+        const meses = ['Todos', ...new Set(registros.map(r => String(r['Mes Inicio '] || '').trim()).filter(Boolean))];
         return {
           vp: vpValores,
           gerencia: ['Todas', ...new Set(gerenciasDisponibles)],
@@ -129,7 +129,7 @@
           const cumpleGerencia = filtros.gerencia === 'Todas' || r['Gerencia'] === filtros.gerencia;
           const cumpleAño = filtros.año === 'Todos' || String(r['Año']) === filtros.año;
           const cumpleResp = filtros.responsable === 'Todos' || r['PDC Responsable OTIC'] === filtros.responsable;
-          const mesValor = (r['Mes Inicio '] || '').trim();
+          const mesValor = String(r['Mes Inicio '] || '').trim();
           const cumpleMes = filtros.mes === 'Todos' || mesValor === filtros.mes;
           const cumpleNombre = filtros.nombres.length === 0 || filtros.nombres.includes(r['Nombre Curso']);
           return cumpleVP && cumpleGerencia && cumpleAño && cumpleResp && cumpleMes && cumpleNombre;
@@ -351,7 +351,7 @@
                         </td>
                         <td className="px-4 py-2">{r['PDC Responsable OTIC']}</td>
                         <td className="px-4 py-2 text-center">{r['Año']}</td>
-                        <td className="px-4 py-2 text-center">{(r['Mes Inicio '] || '').trim()}</td>
+                        <td className="px-4 py-2 text-center">{String(r['Mes Inicio '] || '').trim()}</td>
                       </tr>
                     ))}
                   </tbody>
