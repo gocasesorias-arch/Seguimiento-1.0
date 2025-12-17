@@ -43,7 +43,14 @@
 
   <script type="text/babel">
     const { useMemo, useState, useEffect, useRef } = React;
-    const PASSWORD_CARGA = "admin123";
+
+    // ⚠️ SECURITY WARNING: Client-side authentication is NOT secure for production!
+    // This password check happens in the browser and can be easily bypassed.
+    // For production use, implement proper server-side authentication.
+    //
+    // To set a password, define it in your environment or configuration:
+    // Example: window.UPLOAD_PASSWORD = "your-secure-password";
+    const PASSWORD_CARGA = window.UPLOAD_PASSWORD || null;
 
     const obtenerUltimaActualizacion = () => {
       const label = document.getElementById('last-update');
@@ -375,6 +382,14 @@
     ReactDOM.createRoot(document.getElementById('root')).render(<App />);
 
     document.getElementById('upload-trigger').addEventListener('click', () => {
+      // If no password is configured, allow upload without authentication
+      if (!PASSWORD_CARGA) {
+        if (confirm('⚠️ No hay contraseña configurada. ¿Proceder sin autenticación?\n\nPara producción, configura: window.UPLOAD_PASSWORD = "tu-contraseña"')) {
+          document.querySelector('input[type="file"]')?.click();
+        }
+        return;
+      }
+
       const pass = prompt('Ingresa la contraseña para cargar datos:');
       if (pass === PASSWORD_CARGA) {
         document.querySelector('input[type="file"]')?.click();
