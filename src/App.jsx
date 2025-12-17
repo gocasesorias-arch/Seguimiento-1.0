@@ -1,36 +1,12 @@
-import { useState, useEffect } from 'react'
-
 function App() {
-  const [cursos, setCursos] = useState([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    fetch('/cursos.json')
-      .then(r => r.json())
-      .then(data => {
-        setCursos(data.slice(1)) // Remove header row
-        setLoading(false)
-      })
-      .catch(err => {
-        console.error('Error:', err)
-        setLoading(false)
-      })
-  }, [])
-
-  if (loading) return <div style={{padding: '20px'}}>Cargando...</div>
-
   return (
-    <div style={{padding: '20px', fontFamily: 'Arial'}}>
-      <h1>Sistema de Seguimiento de Capacitaciones</h1>
-      <p>Total de cursos: {cursos.length}</p>
-      <div style={{maxHeight: '400px', overflow: 'auto', border: '1px solid #ccc', padding: '10px'}}>
-        {cursos.slice(0, 10).map((curso, i) => (
-          <div key={i} style={{padding: '10px', borderBottom: '1px solid #eee'}}>
-            <strong>{curso.Column13 || 'Sin nombre'}</strong>
-            <br/>
-            <small>{curso.Column10} - {curso.Column4}</small>
-          </div>
-        ))}
+    <div style={{padding: '40px', fontFamily: 'Arial', background: '#f0f8ff'}}>
+      <h1 style={{color: 'green'}}>✅ REACT FUNCIONA!</h1>
+      <h2>Sistema de Seguimiento de Capacitaciones</h2>
+      <p style={{fontSize: '18px'}}>Si ves este mensaje, React está funcionando correctamente.</p>
+      <div style={{background: 'white', padding: '20px', borderRadius: '8px', marginTop: '20px'}}>
+        <p><strong>Versión de prueba ultra-simple</strong></p>
+        <p>Sin hooks, sin fetch, solo HTML básico renderizado por React.</p>
       </div>
     </div>
   )

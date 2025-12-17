@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Diagnóstico</title>
+    <style>
+        body { font-family: Arial; padding: 20px; background: #f0f0f0; }
+        .success { color: green; font-weight: bold; }
+        .error { color: red; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Diagnóstico del Sistema</h1>
+    <div id="status">Verificando...</div>
+
+    <script>
+        const status = document.getElementById('status');
+
+        // Test 1: JavaScript funciona
+        status.innerHTML = '<p class="success">✅ JavaScript funciona</p>';
+
+        // Test 2: Fetch JSON
+        fetch('/cursos.json')
+            .then(r => r.json())
+            .then(data => {
+                status.innerHTML += `<p class="success">✅ cursos.json cargado: ${data.length} registros</p>`;
+
+                // Test 3: Mostrar datos
+                const primer = data[1];
+                status.innerHTML += `<p class="success">✅ Primer curso: ${primer.Column13}</p>`;
+
+                status.innerHTML += '<hr><p class="success"><strong>TODO FUNCIONA CORRECTAMENTE</strong></p>';
+                status.innerHTML += '<p>Si ves este mensaje, el servidor está bien. El problema es con React.</p>';
+            })
+            .catch(err => {
+                status.innerHTML += `<p class="error">❌ Error: ${err.message}</p>`;
+            });
+    </script>
+</body>
+</html>
