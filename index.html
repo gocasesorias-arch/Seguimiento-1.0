@@ -22,8 +22,14 @@
   <!-- HEADER -->
   <header class="bg-slate-900 text-white shadow">
     <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-      <h1 class="text-xl font-semibold tracking-wide">Sistema de Seguimiento de Capacitaciones</h1>
-      <span class="text-sm text-slate-300">Versión ejecutiva</span>
+      <div>
+        <h1 class="text-xl font-semibold tracking-wide">Sistema de Seguimiento de Capacitaciones</h1>
+        <p class="text-xs text-slate-300">Fecha última actualización: <span id="last-update"></span></p>
+      </div>
+      <div class="flex items-center gap-3">
+        <button id="upload-trigger" class="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg text-sm font-semibold border border-white/20">Cargar Archivo</button>
+        <span class="text-sm text-slate-300">Versión ejecutiva</span>
+      </div>
     </div>
   </header>
 
@@ -36,104 +42,346 @@
   <script src="cursos_data_inline.js"></script>
 
   <script type="text/babel">
-    const { useState, useEffect } = React;
+    const { useMemo, useState, useEffect, useRef } = React;
+    const PASSWORD_CARGA = "admin123";
+
+    const obtenerUltimaActualizacion = () => {
+      const label = document.getElementById('last-update');
+      if (label) {
+        const fecha = new Date();
+        label.textContent = fecha.toLocaleString('es-CL');
+      }
+    };
 
     const App = () => {
-      const [data, setData] = useState([]);
-      const [filtros, setFiltros] = useState({
-        vp: 'Todos',
-        gerencia: 'Todas',
-        tipo: 'Todos',
-        año: 'Todos',
-        responsable: 'Todos'
+      const canonicalKeys = useMemo(() => (window.cursosData?.[0] ? Object.keys(window.cursosData[0]) : []), []);
+      const [cursos, setCursos] = useState(() => {
+        const guardado = localStorage.getItem('cursosDataCache');
+        if (guardado) {
+          try { return JSON.parse(guardado); } catch(e) { /* ignore */ }
+        }
+        return window.cursosData || [];
       });
 
-      const [opciones, setOpciones] = useState({ vp: [], gerencia: [], tipo: [], año: [], responsable: [] });
+      const filtrosIniciales = {
+        vp: 'Todos',
+        gerencia: 'Todas',
+        año: 'Todos',
+        responsable: 'Todos',
+        nombres: [],
+        mes: 'Todos'
+      };
+
+      const [filtros, setFiltros] = useState(filtrosIniciales);
+      const [panelAbierto, setPanelAbierto] = useState(true);
+      const [vista, setVista] = useState('dashboard');
+      const inputArchivoRef = useRef(null);
 
       useEffect(() => {
-        if (window.cursosData && window.cursosData.length > 1) {
-          const registros = window.cursosData.slice(1);
-          setData(registros);
+        localStorage.setItem('cursosDataCache', JSON.stringify(cursos));
+        obtenerUltimaActualizacion();
+      }, [cursos]);
 
-          setOpciones({
-            vp: ['Todos', ...new Set(registros.map(r => r['VP']).filter(Boolean))],
-            gerencia: ['Todas', ...new Set(registros.map(r => r['Gerencia']).filter(Boolean))],
-            tipo: ['Todos', ...new Set(registros.map(r => r['Tipo de Plan']).filter(Boolean))],
-            año: ['Todos', ...new Set(registros.map(r => String(r['Año'])).filter(Boolean))],
-            responsable: ['Todos', ...new Set(registros.map(r => r['PDC Responsable OTIC']).filter(Boolean))]
-          });
+      const registros = useMemo(() => (cursos || []).slice(1), [cursos]);
+
+      const opciones = useMemo(() => {
+        const vpValores = ['Todos', ...new Set(registros.map(r => r['VP']).filter(Boolean))];
+        const gerenciasDisponibles = registros
+          .filter(r => filtros.vp === 'Todos' || r['VP'] === filtros.vp)
+          .map(r => r['Gerencia'])
+          .filter(Boolean);
+        const añoValores = ['Todos', ...new Set(registros.map(r => String(r['Año'])).filter(Boolean))];
+        const responsables = ['Todos', ...new Set(registros.map(r => r['PDC Responsable OTIC']).filter(Boolean))];
+        const nombres = [...new Set(registros.map(r => r['Nombre Curso']).filter(Boolean))];
+        const meses = ['Todos', ...new Set(registros.map(r => (r['Mes Inicio '] || '').trim()).filter(Boolean))];
+        return {
+          vp: vpValores,
+          gerencia: ['Todas', ...new Set(gerenciasDisponibles)],
+          año: añoValores,
+          responsable: responsables,
+          nombres,
+          mes: meses
+        };
+      }, [registros, filtros.vp]);
+
+      useEffect(() => {
+        if (!opciones.gerencia.includes(filtros.gerencia)) {
+          setFiltros(prev => ({ ...prev, gerencia: 'Todas' }));
         }
-      }, []);
+      }, [opciones.gerencia]);
 
-      const aplicarFiltros = (r) => (
-        (filtros.vp === 'Todos' || r['VP'] === filtros.vp) &&
-        (filtros.gerencia === 'Todas' || r['Gerencia'] === filtros.gerencia) &&
-        (filtros.tipo === 'Todos' || r['Tipo de Plan'] === filtros.tipo) &&
-        (filtros.año === 'Todos' || String(r['Año']) === filtros.año) &&
-        (filtros.responsable === 'Todos' || r['PDC Responsable OTIC'] === filtros.responsable)
-      );
+      const datosFiltrados = useMemo(() => {
+        return registros.filter(r => {
+          const cumpleVP = filtros.vp === 'Todos' || r['VP'] === filtros.vp;
+          const cumpleGerencia = filtros.gerencia === 'Todas' || r['Gerencia'] === filtros.gerencia;
+          const cumpleAño = filtros.año === 'Todos' || String(r['Año']) === filtros.año;
+          const cumpleResp = filtros.responsable === 'Todos' || r['PDC Responsable OTIC'] === filtros.responsable;
+          const mesValor = (r['Mes Inicio '] || '').trim();
+          const cumpleMes = filtros.mes === 'Todos' || mesValor === filtros.mes;
+          const cumpleNombre = filtros.nombres.length === 0 || filtros.nombres.includes(r['Nombre Curso']);
+          return cumpleVP && cumpleGerencia && cumpleAño && cumpleResp && cumpleMes && cumpleNombre;
+        });
+      }, [registros, filtros]);
 
-      const datosFiltrados = data.filter(aplicarFiltros);
+      const filtrosActivos = useMemo(() => {
+        let activos = 0;
+        if (filtros.vp !== 'Todos') activos++;
+        if (filtros.gerencia !== 'Todas') activos++;
+        if (filtros.año !== 'Todos') activos++;
+        if (filtros.responsable !== 'Todos') activos++;
+        if (filtros.mes !== 'Todos') activos++;
+        if (filtros.nombres.length > 0) activos++;
+        return activos;
+      }, [filtros]);
+
+      const resumenEstados = useMemo(() => {
+        const estados = {};
+        datosFiltrados.forEach(r => {
+          const estado = r['Estado Actividad'] || 'Sin estado';
+          estados[estado] = (estados[estado] || 0) + 1;
+        });
+        return estados;
+      }, [datosFiltrados]);
+
+      const limpiarFiltros = () => setFiltros(filtrosIniciales);
+
+      const parseCSV = (texto) => {
+        const delimiter = texto.includes(';') && !texto.includes(',') ? ';' : ',';
+        const filas = texto.trim().split(/\r?\n/).filter(l => l.trim() !== '');
+        return filas.map(f => f.split(delimiter).map(v => v.trim()));
+      };
+
+      const mapearFilasAObjetos = (filas) => {
+        if (filas.length === 0) return [];
+        const keys = canonicalKeys.length >= filas[0].length
+          ? canonicalKeys.slice(0, filas[0].length)
+          : Array.from({ length: filas[0].length }, (_, i) => `Column${i+1}`);
+        return filas.map(cols => {
+          const obj = {};
+          keys.forEach((k, idx) => obj[k] = cols[idx] ?? '');
+          return obj;
+        });
+      };
+
+      const handleFileUpload = (event) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const contenido = e.target?.result;
+          if (!contenido) return;
+          try {
+            const parsed = JSON.parse(contenido);
+            if (Array.isArray(parsed)) {
+              setCursos(parsed);
+              setFiltros(filtrosIniciales);
+              alert('Datos JSON cargados correctamente');
+              return;
+            }
+          } catch(err) {
+            // Intentar CSV
+          }
+          const filas = parseCSV(String(contenido));
+          const objetos = mapearFilasAObjetos(filas);
+          if (objetos.length > 0) {
+            setCursos(objetos);
+            setFiltros(filtrosIniciales);
+            alert('Datos CSV cargados correctamente');
+          } else {
+            alert('No se pudieron interpretar los datos del archivo');
+          }
+        };
+        reader.readAsText(file);
+        event.target.value = '';
+      };
+
+      const barraEstados = Object.entries(resumenEstados).map(([estado, cantidad]) => (
+        <div key={estado} className="space-y-1">
+          <div className="flex justify-between text-sm text-slate-700">
+            <span>{estado}</span>
+            <span className="font-semibold">{cantidad}</span>
+          </div>
+          <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
+            <div className="h-2 rounded-full bg-blue-500" style={{ width: `${(cantidad / Math.max(...Object.values(resumenEstados), 1)) * 100}%` }}></div>
+          </div>
+        </div>
+      ));
 
       return (
         <div className="space-y-6">
-
-          {/* PANEL FILTROS EN CASCADA (HEREDADO DE seguimiento_capacitaciones) */}
-          <div className="bg-white rounded-xl shadow p-6">
-            <h2 className="text-lg font-semibold mb-4">Filtros</h2>
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-              {['vp','gerencia','tipo','año','responsable'].map(k => (
-                <select key={k}
-                  className="border rounded-lg px-3 py-2"
-                  value={filtros[k]}
-                  onChange={e => setFiltros({...filtros,[k]:e.target.value})}
-                >
-                  {opciones[k]?.map(o => <option key={o}>{o}</option>)}
-                </select>
-              ))}
-            </div>
+          <input type="file" accept=".json,.csv" className="hidden" ref={inputArchivoRef} onChange={handleFileUpload} />
+          <div className="flex gap-3">
+            <button onClick={() => setVista('dashboard')} className={`px-4 py-2 rounded-lg text-sm font-semibold ${vista==='dashboard' ? 'bg-slate-900 text-white' : 'bg-white text-slate-700 border'}`}>Dashboard</button>
+            <button onClick={() => setVista('gestion')} className={`px-4 py-2 rounded-lg text-sm font-semibold ${vista==='gestion' ? 'bg-slate-900 text-white' : 'bg-white text-slate-700 border'}`}>Gestión</button>
+            <button onClick={() => setVista('hitos')} className={`px-4 py-2 rounded-lg text-sm font-semibold ${vista==='hitos' ? 'bg-slate-900 text-white' : 'bg-white text-slate-700 border'}`}>Hitos</button>
           </div>
 
-          {/* TABLA PRINCIPAL */}
-          <div className="bg-white rounded-xl shadow overflow-x-auto">
-            <table className="min-w-full text-sm">
-              <thead className="bg-slate-100 text-slate-700">
-                <tr>
-                  <th className="px-4 py-3 text-left">Curso</th>
-                  <th className="px-4 py-3">VP</th>
-                  <th className="px-4 py-3">Gerencia</th>
-                  <th className="px-4 py-3">Estado</th>
-                  <th className="px-4 py-3">Responsable</th>
-                  <th className="px-4 py-3">Año</th>
-                </tr>
-              </thead>
-              <tbody>
-                {datosFiltrados.map((r,i) => (
-                  <tr key={i} className="border-t hover:bg-slate-50">
-                    <td className="px-4 py-2 font-medium">{r['Nombre Curso']}</td>
-                    <td className="px-4 py-2">{r['VP']}</td>
-                    <td className="px-4 py-2">{r['Gerencia']}</td>
-                    <td className="px-4 py-2">
-                      <span className="px-2 py-1 rounded text-xs bg-blue-100 text-blue-700">
-                        {r['Estado Actividad']}
-                      </span>
-                    </td>
-                    <td className="px-4 py-2">{r['PDC Responsable OTIC']}</td>
-                    <td className="px-4 py-2 text-center">{r['Año']}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="bg-white rounded-xl shadow p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-slate-900">Filtros</h2>
+                <p className="text-sm text-slate-600">Filtros activos: {filtrosActivos} · Resultados: {datosFiltrados.length}</p>
+              </div>
+              <div className="flex gap-3">
+                <button onClick={() => setPanelAbierto(!panelAbierto)} className="text-sm px-3 py-2 rounded-lg border text-slate-700">
+                  {panelAbierto ? 'Ocultar' : 'Mostrar'}
+                </button>
+                <button onClick={limpiarFiltros} className="text-sm px-3 py-2 rounded-lg bg-red-50 text-red-700 border border-red-200">🗑️ Limpiar</button>
+              </div>
+            </div>
 
-            {datosFiltrados.length === 0 && (
-              <div className="p-6 text-center text-slate-500">Sin resultados con los filtros aplicados</div>
+            {panelAbierto && (
+              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 mt-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-600 mb-1">Vicepresidencia</label>
+                  <select className="border rounded-lg px-3 py-2 w-full" value={filtros.vp} onChange={e => setFiltros({...filtros, vp:e.target.value})}>
+                    {opciones.vp.map(o => <option key={o}>{o}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-600 mb-1">Gerencia</label>
+                  <select className="border rounded-lg px-3 py-2 w-full" value={filtros.gerencia} onChange={e => setFiltros({...filtros, gerencia:e.target.value})}>
+                    {opciones.gerencia.map(o => <option key={o}>{o}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-600 mb-1">Año</label>
+                  <select className="border rounded-lg px-3 py-2 w-full" value={filtros.año} onChange={e => setFiltros({...filtros, año:e.target.value})}>
+                    {opciones.año.map(o => <option key={o}>{o}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-600 mb-1">PDC Responsable OTIC</label>
+                  <select className="border rounded-lg px-3 py-2 w-full" value={filtros.responsable} onChange={e => setFiltros({...filtros, responsable:e.target.value})}>
+                    {opciones.responsable.map(o => <option key={o}>{o}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-600 mb-1">Mes de Inicio (Quincena)</label>
+                  <select className="border rounded-lg px-3 py-2 w-full" value={filtros.mes} onChange={e => setFiltros({...filtros, mes:e.target.value})}>
+                    {opciones.mes.map(o => <option key={o}>{o || 'Sin dato'}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-600 mb-1">Nombre Curso</label>
+                  <select multiple className="border rounded-lg px-3 py-2 w-full h-28" value={filtros.nombres} onChange={e => {
+                    const values = Array.from(e.target.selectedOptions).map(o => o.value);
+                    setFiltros({...filtros, nombres: values});
+                  }}>
+                    {opciones.nombres.map(o => <option key={o}>{o}</option>)}
+                  </select>
+                  <p className="text-xs text-slate-500 mt-1">Selección múltiple disponible</p>
+                </div>
+              </div>
             )}
           </div>
+
+          {vista === 'dashboard' && (
+            <div className="space-y-4">
+              <h2 className="text-xl font-bold text-slate-900">Dashboard</h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="bg-white rounded-xl shadow p-4">
+                  <p className="text-sm text-slate-500">Cursos filtrados</p>
+                  <p className="text-3xl font-bold text-slate-900">{datosFiltrados.length}</p>
+                </div>
+                <div className="bg-white rounded-xl shadow p-4">
+                  <p className="text-sm text-slate-500">VP seleccionada</p>
+                  <p className="text-xl font-semibold text-slate-800">{filtros.vp}</p>
+                </div>
+                <div className="bg-white rounded-xl shadow p-4">
+                  <p className="text-sm text-slate-500">Gerencia seleccionada</p>
+                  <p className="text-xl font-semibold text-slate-800">{filtros.gerencia}</p>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-xl shadow p-6 space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-lg font-semibold text-slate-900">Avance de Hitos</h3>
+                    <p className="text-sm text-slate-600">Distribución por estado</p>
+                  </div>
+                  <span className="text-sm text-slate-500">Persisten al cambiar de vista</span>
+                </div>
+                {Object.keys(resumenEstados).length === 0 ? (
+                  <p className="text-slate-500">No hay datos para graficar</p>
+                ) : (
+                  <div className="space-y-3">{barraEstados}</div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {vista === 'gestion' && (
+            <div className="space-y-4">
+              <h2 className="text-xl font-bold text-slate-900">Gestión</h2>
+              <div className="bg-white rounded-xl shadow overflow-x-auto">
+                <table className="min-w-full text-sm">
+                  <thead className="bg-slate-100 text-slate-700">
+                    <tr>
+                      <th className="px-4 py-3 text-left">Curso</th>
+                      <th className="px-4 py-3">VP</th>
+                      <th className="px-4 py-3">Gerencia</th>
+                      <th className="px-4 py-3">Estado</th>
+                      <th className="px-4 py-3">Responsable</th>
+                      <th className="px-4 py-3">Año</th>
+                      <th className="px-4 py-3">Mes de Inicio</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {datosFiltrados.map((r,i) => (
+                      <tr key={i} className="border-t hover:bg-slate-50">
+                        <td className="px-4 py-2 font-medium">{r['Nombre Curso']}</td>
+                        <td className="px-4 py-2">{r['VP']}</td>
+                        <td className="px-4 py-2">{r['Gerencia']}</td>
+                        <td className="px-4 py-2">
+                          <span className="px-2 py-1 rounded text-xs bg-blue-100 text-blue-700">{r['Estado Actividad']}</span>
+                        </td>
+                        <td className="px-4 py-2">{r['PDC Responsable OTIC']}</td>
+                        <td className="px-4 py-2 text-center">{r['Año']}</td>
+                        <td className="px-4 py-2 text-center">{(r['Mes Inicio '] || '').trim()}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                {datosFiltrados.length === 0 && (
+                  <div className="p-6 text-center text-slate-500">Sin resultados con los filtros aplicados</div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {vista === 'hitos' && (
+            <div className="space-y-4">
+              <h2 className="text-xl font-bold text-slate-900">Hitos</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {datosFiltrados.map((r, idx) => (
+                  <div key={idx} className="bg-white rounded-xl shadow p-4 flex flex-col gap-2">
+                    <p className="text-base font-semibold text-slate-900">{r['Nombre Curso']}</p>
+                    <div className="text-sm text-slate-600">VP: <span className="font-medium text-slate-800">{r['VP']}</span></div>
+                    <div className="text-sm text-slate-600">Gerencia: <span className="font-medium text-slate-800">{r['Gerencia']}</span></div>
+                    <div className="text-sm text-slate-600">Estado: <span className="font-semibold text-blue-700">{r['Estado Actividad']}</span></div>
+                  </div>
+                ))}
+              </div>
+              {datosFiltrados.length === 0 && (
+                <div className="bg-white rounded-xl shadow p-6 text-center text-slate-500">No hay hitos para los filtros seleccionados</div>
+              )}
+            </div>
+          )}
         </div>
       );
     };
 
     ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+
+    document.getElementById('upload-trigger').addEventListener('click', () => {
+      const pass = prompt('Ingresa la contraseña para cargar datos:');
+      if (pass === PASSWORD_CARGA) {
+        document.querySelector('input[type="file"]')?.click();
+      } else if (pass !== null) {
+        alert('Contraseña incorrecta');
+      }
+    });
   </script>
 </body>
 </html>
