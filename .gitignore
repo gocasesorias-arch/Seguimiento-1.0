@@ -20,5 +20,8 @@ npm-debug.log*
 .DS_Store
 Thumbs.db
 
+# Test files
+test.html
+
 # Backup files
 *.backup
