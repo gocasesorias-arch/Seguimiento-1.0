@@ -2,9 +2,11 @@ import { useState, useEffect, useMemo } from 'react'
 import { useAuth } from './context/AuthContext'
 import FiltrosCursos from './components/FiltrosCursos'
 import TarjetaCurso from './components/TarjetaCurso'
+import GestionHitos from './components/GestionHitos'
 import LoginForm from './components/LoginForm'
 import { cursosService } from './services/apiService'
-import { validarCurso } from './utils/cursoHelpers'
+import { validarCurso, normalizarCurso } from './utils/cursoHelpers'
+import { useHitos } from './hooks/useHitos'
 
 function App() {
   const { user, isAuthenticated, logout } = useAuth()
@@ -13,11 +15,15 @@ function App() {
   const [error, setError] = useState(null)
   const [showLogin, setShowLogin] = useState(false)
   const [apiMode, setApiMode] = useState(true) // true = API, false = JSON
+  const [vistaActual, setVistaActual] = useState('listado') // 'listado' o 'gestion'
   const [filtros, setFiltros] = useState({
     vp: 'Todos',
     gerencia: 'Todas',
     estado: 'Todos'
   })
+
+  // Hook de gestión de hitos
+  const { progresoHitos, toggleHito, cambiarEstadoEspecial } = useHitos(cursos)
 
   // Cargar datos desde API o JSON
   useEffect(() => {
@@ -32,8 +38,13 @@ function App() {
             const response = await cursosService.getCursos()
 
             if (response.success && Array.isArray(response.data)) {
-              // Los datos ya vienen normalizados desde la BD
-              const cursosValidos = response.data.filter(curso => {
+              // Los datos ya vienen normalizados desde la BD, pero normalizar VP a mayúsculas
+              const cursosNormalizados = response.data.map(curso => ({
+                ...curso,
+                vp: (curso.vp || '').toUpperCase()
+              }))
+
+              const cursosValidos = cursosNormalizados.filter(curso => {
                 const { esValido, errores } = validarCurso(curso)
                 if (!esValido) {
                   console.warn(`Curso "${curso.nombre}" tiene errores:`, errores)
@@ -65,8 +76,7 @@ function App() {
             throw new Error('El archivo de datos está vacío')
           }
 
-          // Normalizar desde JSON
-          const { normalizarCurso } = await import('./utils/cursoHelpers')
+          // Normalizar desde JSON (incluye normalización de VP a mayúsculas)
           const cursosNormalizados = data.slice(1).map(cursoRaw => {
             try {
               return normalizarCurso(cursoRaw)
@@ -81,15 +91,16 @@ function App() {
             if (!esValido) {
               console.warn(`Curso "${curso.nombre}" tiene errores:`, errores)
             }
-          return esValido
-        })
+            return esValido
+          })
 
-        if (cursosValidos.length === 0) {
-          throw new Error('No se encontraron cursos válidos en los datos')
+          if (cursosValidos.length === 0) {
+            throw new Error('No se encontraron cursos válidos en los datos')
+          }
+
+          setCursos(cursosValidos)
+          console.log(`✅ ${cursosValidos.length} cursos cargados desde JSON`)
         }
-
-        setCursos(cursosValidos)
-        console.log(`✅ ${cursosValidos.length} cursos cargados y validados correctamente`)
 
         setLoading(false)
       } catch (err) {
@@ -100,12 +111,26 @@ function App() {
     }
 
     cargarDatos()
+  }, [apiMode])
+
+  // Escuchar evento de limpiar filtros
+  useEffect(() => {
+    const handleLimpiarFiltros = () => {
+      setFiltros({
+        vp: 'Todos',
+        gerencia: 'Todas',
+        estado: 'Todos'
+      })
+    }
+
+    window.addEventListener('limpiarFiltros', handleLimpiarFiltros)
+    return () => window.removeEventListener('limpiarFiltros', handleLimpiarFiltros)
   }, [])
 
   // Aplicar filtros
   const cursosFiltrados = useMemo(() => {
     return cursos.filter(curso => {
-      const cumpleVP = filtros.vp === 'Todos' || curso.vp === filtros.vp
+      const cumpleVP = filtros.vp === 'Todos' || (curso.vp || '').toUpperCase() === filtros.vp.toUpperCase()
       const cumpleGerencia = filtros.gerencia === 'Todas' || curso.gerencia === filtros.gerencia
       const cumpleEstado = filtros.estado === 'Todos' || curso.estado === filtros.estado
       return cumpleVP && cumpleGerencia && cumpleEstado
@@ -120,10 +145,13 @@ function App() {
       enEjecucion: cursosFiltrados.filter(c => c.estado === 'En Ejecución').length,
       enProceso: cursosFiltrados.filter(c => c.estado === 'En Proceso').length,
       planificacion: cursosFiltrados.filter(c => c.estado === 'Planificación').length,
-      totalHoras: cursosFiltrados.reduce((sum, c) => sum + c.horas, 0),
+      totalHoras: cursosFiltrados.reduce((sum, c) => sum + (c.horas || 0), 0),
       totalParticipantes: cursosFiltrados.reduce((sum, c) => {
-        const totalMes = Object.values(c.participantesPorMes).reduce((a, b) => a + b, 0)
-        return sum + totalMes
+        if (c.participantesPorMes) {
+          const totalMes = Object.values(c.participantesPorMes).reduce((a, b) => a + b, 0)
+          return sum + totalMes
+        }
+        return sum
       }, 0)
     }
   }, [cursosFiltrados])
@@ -225,6 +253,30 @@ function App() {
               )}
             </div>
           </div>
+
+          {/* Toggle de vistas */}
+          <div className="mt-4 flex gap-2">
+            <button
+              onClick={() => setVistaActual('listado')}
+              className={`px-6 py-2 rounded-lg font-semibold transition-colors ${
+                vistaActual === 'listado'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              📋 Vista Listado
+            </button>
+            <button
+              onClick={() => setVistaActual('gestion')}
+              className={`px-6 py-2 rounded-lg font-semibold transition-colors ${
+                vistaActual === 'gestion'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              ✅ Gestión de Hitos
+            </button>
+          </div>
         </div>
 
         {/* Login Modal */}
@@ -266,37 +318,50 @@ function App() {
           cursos={cursos}
         />
 
-        {/* Lista de Cursos */}
-        <div className="bg-white rounded-xl shadow-lg p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-gray-800">
-              📚 Cursos
-            </h2>
-            <span className="px-4 py-2 bg-blue-100 text-blue-800 rounded-lg font-semibold">
-              {cursosFiltrados.length} resultados
-            </span>
-          </div>
+        {/* Vista Listado */}
+        {vistaActual === 'listado' && (
+          <div className="bg-white rounded-xl shadow-lg p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-gray-800">
+                📚 Cursos
+              </h2>
+              <span className="px-4 py-2 bg-blue-100 text-blue-800 rounded-lg font-semibold">
+                {cursosFiltrados.length} resultados
+              </span>
+            </div>
 
-          {cursosFiltrados.length === 0 ? (
-            <div className="text-center py-12 text-gray-500">
-              <div className="text-6xl mb-4">📭</div>
-              <p className="text-lg font-semibold mb-2">No hay cursos que cumplan los filtros</p>
-              <p className="text-sm">Intenta ajustar o limpiar los filtros</p>
-              <button
-                onClick={handleLimpiarFiltros}
-                className="mt-4 px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-semibold"
-              >
-                🗑️ Limpiar Filtros
-              </button>
-            </div>
-          ) : (
-            <div className="space-y-3 max-h-[700px] overflow-y-auto pr-2">
-              {cursosFiltrados.map((curso, index) => (
-                <TarjetaCurso key={curso.id || index} curso={curso} index={index} />
-              ))}
-            </div>
-          )}
-        </div>
+            {cursosFiltrados.length === 0 ? (
+              <div className="text-center py-12 text-gray-500">
+                <div className="text-6xl mb-4">📭</div>
+                <p className="text-lg font-semibold mb-2">No hay cursos que cumplan los filtros</p>
+                <p className="text-sm">Intenta ajustar o limpiar los filtros</p>
+                <button
+                  onClick={handleLimpiarFiltros}
+                  className="mt-4 px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-semibold"
+                >
+                  🗑️ Limpiar Filtros
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-3 max-h-[700px] overflow-y-auto pr-2">
+                {cursosFiltrados.map((curso, index) => (
+                  <TarjetaCurso key={curso.id || index} curso={curso} index={index} />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Vista Gestión de Hitos */}
+        {vistaActual === 'gestion' && (
+          <GestionHitos
+            cursos={cursos}
+            progresoHitos={progresoHitos}
+            onToggleHito={toggleHito}
+            onCambiarEstadoEspecial={cambiarEstadoEspecial}
+            filtrosAplicados={filtros}
+          />
+        )}
 
         {/* Footer mejorado */}
         <div className="mt-6 bg-white rounded-lg shadow p-4 text-center text-gray-600 text-sm">
@@ -304,7 +369,7 @@ function App() {
             <span>© 2024 Sistema de Seguimiento de Capacitaciones</span>
             <span className="hidden md:inline">•</span>
             <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">
-              Fase 2: Modelo Normalizado
+              Fase 3: Backend API + Gestión de Hitos
             </span>
             <span className="hidden md:inline">•</span>
             <span>Deployado en GitHub Pages</span>

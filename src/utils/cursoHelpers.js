@@ -15,8 +15,8 @@ export const normalizarCurso = (cursoRaw) => {
     responsableOTIC: cursoRaw.Column7 || '',
     observaciones: cursoRaw.Column8 || '',
 
-    // Organización
-    vp: cursoRaw.Column9 || '',
+    // Organización - NORMALIZAR VP A MAYÚSCULAS
+    vp: (cursoRaw.Column9 || '').toUpperCase(),
     gerencia: cursoRaw.Column10 || '',
 
     // Detalles del curso
