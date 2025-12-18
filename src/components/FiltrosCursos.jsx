@@ -45,7 +45,7 @@ const FiltrosCursos = ({
   const mesesDisponibles = useMemo(() => {
     const meses = new Set(
       cursos
-        .map(c => c.mesInicio || c.Column2)
+        .map(c => c.mesInicio)
         .filter(Boolean)
     )
     return Array.from(meses).map(m => String(m)).sort((a, b) => Number(a) - Number(b))

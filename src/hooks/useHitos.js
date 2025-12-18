@@ -39,7 +39,7 @@ export const useHitos = (cursos) => {
     setProgresoHitos(prev => {
       const cursoProgreso = prev[cursoIndex] || {
         hitos: [false, false, false, false],
-        estadoActual: cursos[cursoIndex]?.estado || cursos[cursoIndex]?.Column4,
+        estadoActual: cursos[cursoIndex]?.estado,
         estadoAnterior: null,
         historialEstados: []
       }
@@ -96,7 +96,7 @@ export const useHitos = (cursos) => {
     setProgresoHitos(prev => {
       const cursoProgreso = prev[cursoIndex] || {
         hitos: [false, false, false, false],
-        estadoActual: cursos[cursoIndex]?.estado || cursos[cursoIndex]?.Column4,
+        estadoActual: cursos[cursoIndex]?.estado,
         estadoAnterior: null,
         historialEstados: []
       }

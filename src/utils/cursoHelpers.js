@@ -1,63 +1,83 @@
 /**
- * Normaliza un curso del formato crudo (Column1, Column2) a formato semántico
+ * Normaliza un curso del formato crudo (columnas nombradas) a formato semántico
  */
 export const normalizarCurso = (cursoRaw) => {
+  const mesInicioRaw = cursoRaw['Mes Inicio '] ?? cursoRaw['Mes Inicio']
+
   return {
     // Identificación
-    id: cursoRaw.Column1 || '',
-    año: parseInt(cursoRaw.Column2) || 0,
-    idGerencia: cursoRaw.Column3 || '',
+    id: cursoRaw['ID POWERBI'] || '',
+    año: parseInt(cursoRaw['Año']) || 0,
+    idGerencia: cursoRaw['ID Gerencia'] || '',
 
     // Estado y gestión
-    estado: cursoRaw.Column4 || 'Sin estado',
-    liderProceso: cursoRaw.Column5 || '',
-    usuarioResponsable: cursoRaw.Column6 || '',
-    responsableOTIC: cursoRaw.Column7 || '',
-    observaciones: cursoRaw.Column8 || '',
+    estado: cursoRaw['Estado Actividad'] || 'Sin estado',
+    liderProceso: cursoRaw['Líder Proceso área'] || '',
+    usuarioResponsable: cursoRaw['Usuario Responsable Capacitación CMDIC'] || '',
+    responsableOTIC: cursoRaw['PDC Responsable OTIC'] || '',
+    observaciones: cursoRaw['OBS'] || '',
 
     // Organización - NORMALIZAR VP A MAYÚSCULAS
-    vp: (cursoRaw.Column9 || '').toUpperCase(),
-    gerencia: cursoRaw.Column10 || '',
+    vp: (cursoRaw['VP'] || '').toUpperCase(),
+    gerencia: cursoRaw['Gerencia'] || '',
 
     // Detalles del curso
-    tipoPlan: cursoRaw.Column11 || '',
-    subtipo: cursoRaw.Column12 || '',
-    nombre: cursoRaw.Column13 || 'Sin nombre',
-    objetivo: cursoRaw.Column14 || 'Sin descripción',
-    horas: parseInt(cursoRaw.Column15) || 0,
-    tipoCargo: cursoRaw.Column16 || '',
-    dirigidoA: cursoRaw.Column17 || '',
+    tipoPlan: cursoRaw['Tipo de Plan'] || '',
+    subtipo: cursoRaw['Subtipo'] || '',
+    nombre: cursoRaw['nombre'] || 'Sin nombre',
+    objetivo: cursoRaw['Objetivo Curso'] || 'Sin descripción',
+    horas: parseInt(cursoRaw['Horas Curso']) || 0,
+    tipoCargo: cursoRaw['Tipo de Cargo (Job Code)'] || '',
+    dirigidoA: cursoRaw['Dirigido a'] || '',
 
     // Participantes y costos
-    valorPersona: parseInt(cursoRaw['18348']) || 0,
-    participacionReal: parseInt(cursoRaw.Column19) || 0,
+    totalParticipantesProgramados: parseInt(cursoRaw['Total Participantes Programados']) || 0,
+    participacionReal: parseInt(cursoRaw['Participación Real']) || 0,
+    valorPersona: parseInt(cursoRaw['Valor Persona']) || 0,
+    inversionTotal: parseInt(cursoRaw['Inversión Total']) || 0,
 
     // Proveedor y modalidad
-    otecSugerido: cursoRaw.Column20 || '',
-    modalidad: cursoRaw.Column21 || '',
-    planEmergente: cursoRaw.Column22 || '',
-    internoExterno: cursoRaw.Column23 || '',
-    abiertoCerrado: cursoRaw.Column24 || '',
-    moduloPlanificador: cursoRaw.Column25 || '',
+    otecSugerido: cursoRaw['OTEC Sugerido'] || '',
+    modalidad: cursoRaw['Modalidad'] || '',
+    planEmergente: cursoRaw['Plan/Emergente'] || '',
+    internoExterno: cursoRaw['Interno/Externo'] || '',
+    abiertoCerrado: cursoRaw['Abierto/Cerrado'] || '',
+    moduloPlanificador: cursoRaw['Módulo Planificador Clikma'] || '',
 
     // Fechas y ejecución
-    mesInicio: parseInt(cursoRaw['0']) || 0,
-    detalleEjecucion: cursoRaw.Column27 || '',
+    mesInicio: parseInt(mesInicioRaw) || 0,
+    detalleEjecucion: cursoRaw['Ejecucion - detalle'] || '',
 
     // Datos mensuales (simplificado)
     participantesPorMes: {
-      enero: parseInt(cursoRaw['139']) || 0,
-      febrero: parseInt(cursoRaw['182']) || 0,
-      marzo: parseInt(cursoRaw['2663']) || 0,
-      abril: parseInt(cursoRaw['1928']) || 0,
-      mayo: parseInt(cursoRaw['2247']) || 0,
-      junio: parseInt(cursoRaw['2494']) || 0,
-      julio: parseInt(cursoRaw['2252']) || 0,
-      agosto: parseInt(cursoRaw['2866']) || 0,
-      septiembre: parseInt(cursoRaw['1600']) || 0,
-      octubre: parseInt(cursoRaw['1666']) || 0,
-      noviembre: parseInt(cursoRaw['261']) || 0,
-      diciembre: parseInt(cursoRaw['50']) || 0
+      enero: parseInt(cursoRaw['Ene']) || 0,
+      febrero: parseInt(cursoRaw['Feb']) || 0,
+      marzo: parseInt(cursoRaw['Mar']) || 0,
+      abril: parseInt(cursoRaw['Abr']) || 0,
+      mayo: parseInt(cursoRaw['May']) || 0,
+      junio: parseInt(cursoRaw['Jun']) || 0,
+      julio: parseInt(cursoRaw['Jul']) || 0,
+      agosto: parseInt(cursoRaw['Ago']) || 0,
+      septiembre: parseInt(cursoRaw['Sept']) || 0,
+      octubre: parseInt(cursoRaw['Oct']) || 0,
+      noviembre: parseInt(cursoRaw['Nov']) || 0,
+      diciembre: parseInt(cursoRaw['Dic']) || 0
+    },
+
+    // Distribución de inversión mensual
+    inversionPorMes: {
+      enero: parseInt(cursoRaw['Enero']) || 0,
+      febrero: parseInt(cursoRaw['Febrero']) || 0,
+      marzo: parseInt(cursoRaw['Marzo']) || 0,
+      abril: parseInt(cursoRaw['Abril']) || 0,
+      mayo: parseInt(cursoRaw['Mayo']) || 0,
+      junio: parseInt(cursoRaw['Junio']) || 0,
+      julio: parseInt(cursoRaw['Julio']) || 0,
+      agosto: parseInt(cursoRaw['Agosto']) || 0,
+      septiembre: parseInt(cursoRaw['Septiembre']) || 0,
+      octubre: parseInt(cursoRaw['Octubre']) || 0,
+      noviembre: parseInt(cursoRaw['Noviembre']) || 0,
+      diciembre: parseInt(cursoRaw['Diciembre']) || 0
     },
 
     // Mantener datos raw para compatibilidad
