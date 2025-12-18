@@ -134,35 +134,42 @@ function App() {
   }, [])
 
   // Aplicar filtros
+  const cursosConEstado = useMemo(() => {
+    return cursos.map((curso, index) => {
+      const progresoCurso = progresoHitos[index] || {}
+      const estadoActual = progresoCurso.estadoActual || curso.estado || curso.Column4
+      return {
+        ...curso,
+        estadoActual,
+        mesInicio: curso.mesInicio || curso.Column2,
+        progreso: progresoCurso.hitos || [false, false, false, false],
+        historialEstados: progresoCurso.historialEstados || [],
+        originalIndex: index
+      }
+    })
+  }, [cursos, progresoHitos])
+
   const cursosFiltrados = useMemo(() => {
-    return cursos.filter(curso => {
+    return cursosConEstado.filter(curso => {
       const cumpleVP = filtros.vp === 'Todos' || (curso.vp || '').toUpperCase() === filtros.vp.toUpperCase()
       const cumpleGerencia = filtros.gerencia === 'Todas' || curso.gerencia === filtros.gerencia
-      const cumpleEstado = filtros.estado === 'Todos' || curso.estado === filtros.estado
+      const cumpleEstado = filtros.estado === 'Todos' || curso.estadoActual === filtros.estado
       const cumpleCursoSeleccionado = filtros.cursos.length === 0 || filtros.cursos.includes(curso.nombre)
       const cumpleMesInicio = filtros.mesesInicio.length === 0 || filtros.mesesInicio.includes(String(curso.mesInicio))
       return cumpleVP && cumpleGerencia && cumpleEstado && cumpleCursoSeleccionado && cumpleMesInicio
     })
-  }, [cursos, filtros])
+  }, [cursosConEstado, filtros])
 
   // Estadísticas
   const estadisticas = useMemo(() => {
     return {
       total: cursosFiltrados.length,
-      realizados: cursosFiltrados.filter(c => c.estado === 'Realizado').length,
-      enEjecucion: cursosFiltrados.filter(c => c.estado === 'En Ejecución').length,
-      enProceso: cursosFiltrados.filter(c => c.estado === 'En Proceso').length,
-      programado: cursosFiltrados.filter(c => c.estado === 'Programado').length,
-      planificado: cursosFiltrados.filter(c => c.estado === 'Planificado' || c.estado === 'Planificación').length,
-      pendiente: cursosFiltrados.filter(c => c.estado === 'Pendiente').length,
-      totalHoras: cursosFiltrados.reduce((sum, c) => sum + (c.horas || 0), 0),
-      totalParticipantes: cursosFiltrados.reduce((sum, c) => {
-        if (c.participantesPorMes) {
-          const totalMes = Object.values(c.participantesPorMes).reduce((a, b) => a + b, 0)
-          return sum + totalMes
-        }
-        return sum
-      }, 0)
+      realizados: cursosFiltrados.filter(c => c.estadoActual === 'Realizado').length,
+      enEjecucion: cursosFiltrados.filter(c => c.estadoActual === 'En Ejecución').length,
+      enProceso: cursosFiltrados.filter(c => c.estadoActual === 'En Proceso').length,
+      programado: cursosFiltrados.filter(c => c.estadoActual === 'Programado').length,
+      planificado: cursosFiltrados.filter(c => c.estadoActual === 'Planificado' || c.estadoActual === 'Planificación').length,
+      pendiente: cursosFiltrados.filter(c => c.estadoActual === 'Pendiente').length
     }
   }, [cursosFiltrados])
 
@@ -310,7 +317,7 @@ function App() {
         {showLogin && <LoginForm onClose={() => setShowLogin(false)} />}
 
         {/* Estadísticas Mejoradas */}
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 mb-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-4 mb-2">
           <div className="bg-white rounded-lg shadow p-4">
             <div className="text-2xl font-bold text-blue-600">{estadisticas.total}</div>
             <div className="text-xs text-gray-600">Filtrados</div>
@@ -339,17 +346,11 @@ function App() {
             <div className="text-2xl font-bold text-slate-700">{estadisticas.pendiente}</div>
             <div className="text-xs text-gray-600">Pendiente</div>
           </div>
-          <div className="bg-white rounded-lg shadow p-4">
-            <div className="text-2xl font-bold text-purple-600">{estadisticas.totalHoras.toLocaleString()}</div>
-            <div className="text-xs text-gray-600">Horas Totales</div>
-          </div>
-          <div className="bg-white rounded-lg shadow p-4">
-            <div className="text-2xl font-bold text-orange-600">{estadisticas.totalParticipantes.toLocaleString()}</div>
-            <div className="text-xs text-gray-600">Participantes</div>
-          </div>
         </div>
-        <div className="text-sm text-gray-600 mb-6">
-          Fecha última actualización: <span className="font-semibold">{lastUpdate.toLocaleString()}</span>
+        <div className="text-sm text-gray-600 mb-6 flex items-center gap-2">
+          <span className="inline-flex items-center px-2 py-1 bg-slate-100 text-slate-700 rounded-lg border border-slate-200 font-semibold">
+            Fecha última actualización: {lastUpdate.toLocaleString()}
+          </span>
         </div>
 
         {/* Filtros con cascada */}
@@ -357,7 +358,7 @@ function App() {
           filtros={filtros}
           onFiltroChange={handleFiltroChange}
           onLimpiarFiltros={handleLimpiarFiltros}
-          cursos={cursos}
+          cursos={cursosConEstado}
         />
 
         {/* Vista Listado */}

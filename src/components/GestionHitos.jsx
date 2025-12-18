@@ -49,7 +49,7 @@ const GestionHitos = ({
     const progreso = progresoHitos[cursoIndex] || { hitos: [false, false, false, false] }
     const completados = progreso.hitos.filter(h => h).length
     const total = 4
-    const mesClave = String(curso.mesInicio || 'Sin mes')
+    const mesClave = String(curso.mesInicio || curso.Column2 || 'Sin mes')
 
     if (!acc[mesClave]) {
       acc[mesClave] = { completados: 0, total: 0 }
@@ -82,24 +82,25 @@ const GestionHitos = ({
         {/* Gráfico de avance de hitos */}
         {graficoOrden.length > 0 && (
           <div className="mb-6 p-4 bg-slate-50 border-2 border-slate-200 rounded-lg">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="font-semibold text-slate-700">Gráfico de avance de hitos (pendiente según fecha de inicio)</h3>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-slate-700">Avance de hitos por mes de inicio</h3>
               <span className="text-xs text-slate-500">Hitos realizados vs totales proyectados</span>
             </div>
-            <div className="space-y-3">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 items-end">
               {graficoOrden.map(([mes, data]) => {
                 const porcentaje = data.total > 0 ? (data.completados / data.total) * 100 : 0
                 return (
-                  <div key={mes}>
-                    <div className="flex items-center justify-between text-xs text-slate-600 mb-1">
-                      <span>{mes === 'Sin mes' ? 'Sin mes de inicio' : `Mes ${mes}`}</span>
-                      <span>{data.completados}/{data.total} hitos</span>
-                    </div>
-                    <div className="w-full bg-white border-2 border-slate-200 rounded-full h-3 overflow-hidden">
+                  <div key={mes} className="flex flex-col items-center gap-2">
+                    <div className="w-full h-28 bg-white border-2 border-slate-200 rounded-lg flex items-end overflow-hidden">
                       <div
-                        className="bg-gradient-to-r from-green-400 to-blue-500 h-3"
-                        style={{ width: `${porcentaje}%` }}
+                        className="w-full bg-gradient-to-t from-blue-500 to-green-400 transition-all duration-500"
+                        style={{ height: `${porcentaje}%` }}
+                        title={`${data.completados}/${data.total} hitos`}
                       />
+                    </div>
+                    <div className="text-xs text-center text-slate-600">
+                      <div className="font-semibold">{mes === 'Sin mes' ? 'Sin mes' : `Mes ${mes}`}</div>
+                      <div>{data.completados}/{data.total} hitos ({porcentaje.toFixed(0)}%)</div>
                     </div>
                   </div>
                 )
@@ -125,7 +126,8 @@ const GestionHitos = ({
               const cursoOriginalIndex = cursos.indexOf(curso)
               const progreso = progresoHitos[cursoOriginalIndex] || {
                 hitos: [false, false, false, false],
-                estadoActual: curso.estado || curso.Column4
+                estadoActual: curso.estado || curso.Column4,
+                historialEstados: []
               }
               const estadoActual = progreso.estadoActual || curso.estado || curso.Column4
               const hitosEstado = obtenerHitosPorEstado(estadoActual)
@@ -261,7 +263,7 @@ const GestionHitos = ({
                       </div>
 
                       {/* Botones especiales */}
-                      <div className="flex gap-3 pt-4 border-t-2">
+                      <div className="flex flex-wrap gap-3 pt-4 border-t-2">
                         <button
                           onClick={() => onCambiarEstadoEspecial(cursoOriginalIndex, 'Suspendido')}
                           className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-red-100 text-red-700 border-2 border-red-300 rounded-lg font-semibold hover:bg-red-200 transition-all"
@@ -276,7 +278,7 @@ const GestionHitos = ({
                           <Clock size={20} />
                           Postergar Curso
                         </button>
-                        {progreso.estadoAnterior && (
+                        {(progreso.estadoAnterior || (progreso.historialEstados?.length || 0) > 0) && (
                           <button
                             onClick={() => onRevertirEstado(cursoOriginalIndex)}
                             className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-blue-100 text-blue-700 border-2 border-blue-300 rounded-lg font-semibold hover:bg-blue-200 transition-all"
@@ -286,10 +288,28 @@ const GestionHitos = ({
                         )}
                       </div>
 
+                      {progreso.historialEstados && progreso.historialEstados.length > 0 && (
+                        <div className="mt-4 p-4 bg-slate-50 border-2 border-slate-200 rounded-lg">
+                          <div className="flex items-center justify-between mb-2">
+                            <h5 className="text-sm font-semibold text-slate-700">Historial de estados</h5>
+                            <span className="text-xs text-slate-500">Reversa habilitada</span>
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                            {progreso.historialEstados.slice(-4).reverse().map((registro, idx) => (
+                              <div key={`${registro.estado}-${idx}`} className="px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs">
+                                <div className="font-semibold text-slate-700">{registro.estado}</div>
+                                <div className="text-slate-500">{new Date(registro.fecha).toLocaleString()}</div>
+                                {registro.motivo && <div className="text-slate-400 italic">{registro.motivo}</div>}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
                       {hitosCompletados === 4 && (
                         <div className="mt-4 p-4 bg-green-100 border-2 border-green-500 rounded-lg text-center">
                           <p className="text-green-800 font-semibold">
-                            ✅ El cuso ha finalizado el registro de hitos exitosamente.
+                            ✅ El curso ha finalizado el registro de hitos exitosamente.
                           </p>
                         </div>
                       )}
