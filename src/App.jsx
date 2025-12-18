@@ -137,11 +137,11 @@ function App() {
   const cursosConEstado = useMemo(() => {
     return cursos.map((curso, index) => {
       const progresoCurso = progresoHitos[index] || {}
-      const estadoActual = progresoCurso.estadoActual || curso.estado || curso.Column4
+      const estadoActual = progresoCurso.estadoActual || curso.estado
       return {
         ...curso,
         estadoActual,
-        mesInicio: curso.mesInicio || curso.Column2,
+        mesInicio: curso.mesInicio,
         progreso: progresoCurso.hitos || [false, false, false, false],
         historialEstados: progresoCurso.historialEstados || [],
         originalIndex: index
