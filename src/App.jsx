@@ -73,7 +73,10 @@ function App() {
             throw new Error(`Error HTTP: ${response.status}`)
           }
 
-          const data = await response.json()
+          // Sanear textos con valores inválidos (NaN) antes de parsear JSON
+          const rawText = await response.text()
+          const sanitizedText = rawText.replace(/\bNaN\b/gi, '0')
+          const data = JSON.parse(sanitizedText)
 
           if (!Array.isArray(data) || data.length === 0) {
             throw new Error('El archivo de datos está vacío')
@@ -137,11 +140,11 @@ function App() {
   const cursosConEstado = useMemo(() => {
     return cursos.map((curso, index) => {
       const progresoCurso = progresoHitos[index] || {}
-      const estadoActual = progresoCurso.estadoActual || curso.estado || curso.Column4
+      const estadoActual = progresoCurso.estadoActual || curso.estado
       return {
         ...curso,
         estadoActual,
-        mesInicio: curso.mesInicio || curso.Column2,
+        mesInicio: curso.mesInicio,
         progreso: progresoCurso.hitos || [false, false, false, false],
         historialEstados: progresoCurso.historialEstados || [],
         originalIndex: index

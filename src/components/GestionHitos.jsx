@@ -23,17 +23,17 @@ const GestionHitos = ({
   const cursosFiltrados = cursos.filter(curso => {
     // Obtener el estado actual (puede ser modificado por hitos)
     const cursoIndex = cursos.indexOf(curso)
-    const estadoActual = progresoHitos[cursoIndex]?.estadoActual || curso.estado || curso.Column4
+    const estadoActual = progresoHitos[cursoIndex]?.estadoActual || curso.estado
 
     const cumpleVP = filtrosAplicados.vp === 'Todos' ||
-                     (curso.vp || curso.Column9 || '').toUpperCase() === filtrosAplicados.vp.toUpperCase()
+          (curso.vp || '').toUpperCase() === filtrosAplicados.vp.toUpperCase()
     const cumpleGerencia = filtrosAplicados.gerencia === 'Todas' ||
-                           (curso.gerencia || curso.Column10) === filtrosAplicados.gerencia
+                curso.gerencia === filtrosAplicados.gerencia
     const cumpleEstado = filtrosAplicados.estado === 'Todos' || estadoActual === filtrosAplicados.estado
     const cumpleCursoSeleccionado = filtrosAplicados.cursos.length === 0 ||
-      filtrosAplicados.cursos.includes(curso.nombre || curso.Column13)
+      filtrosAplicados.cursos.includes(curso.nombre)
     const cumpleMesInicio = filtrosAplicados.mesesInicio.length === 0 ||
-      filtrosAplicados.mesesInicio.includes(String(curso.mesInicio || curso.Column2))
+      filtrosAplicados.mesesInicio.includes(String(curso.mesInicio))
 
     return cumpleVP && cumpleGerencia && cumpleEstado && cumpleCursoSeleccionado && cumpleMesInicio
   })
@@ -49,7 +49,7 @@ const GestionHitos = ({
     const progreso = progresoHitos[cursoIndex] || { hitos: [false, false, false, false] }
     const completados = progreso.hitos.filter(h => h).length
     const total = 4
-    const mesClave = String(curso.mesInicio || curso.Column2 || 'Sin mes')
+    const mesClave = String(curso.mesInicio || 'Sin mes')
 
     if (!acc[mesClave]) {
       acc[mesClave] = { completados: 0, total: 0 }
@@ -126,10 +126,10 @@ const GestionHitos = ({
               const cursoOriginalIndex = cursos.indexOf(curso)
               const progreso = progresoHitos[cursoOriginalIndex] || {
                 hitos: [false, false, false, false],
-                estadoActual: curso.estado || curso.Column4,
+                estadoActual: curso.estado,
                 historialEstados: []
               }
-              const estadoActual = progreso.estadoActual || curso.estado || curso.Column4
+              const estadoActual = progreso.estadoActual || curso.estado
               const hitosEstado = obtenerHitosPorEstado(estadoActual)
               const colorEstado = obtenerColorPorEstado(estadoActual)
               const hitosCompletados = progreso.hitos.filter(h => h).length
@@ -154,14 +154,14 @@ const GestionHitos = ({
                     <div className="flex items-center justify-between flex-wrap gap-4">
                       <div className="flex-1">
                         <h3 className="font-semibold text-slate-800 mb-2">
-                          {curso.nombre || curso.Column13 || 'Sin nombre'}
+                          {curso.nombre || 'Sin nombre'}
                         </h3>
                         <div className="flex flex-wrap gap-2 text-xs">
                           <span className="px-2 py-1 bg-purple-100 text-purple-700 rounded font-semibold">
-                            {(curso.vp || curso.Column9 || 'Sin VP').toUpperCase()}
+                            {(curso.vp || 'Sin VP').toUpperCase()}
                           </span>
                           <span className="px-2 py-1 bg-white rounded border">
-                            {curso.gerencia || curso.Column10 || 'Sin gerencia'}
+                            {curso.gerencia || 'Sin gerencia'}
                           </span>
                           <span className={`px-3 py-1 rounded-full font-semibold ${colorEstado}`}>
                             {estadoActual}
@@ -194,20 +194,20 @@ const GestionHitos = ({
                       {/* Info adicional */}
                       <div className="mb-6 p-4 bg-slate-50 rounded-lg">
                         <p className="text-sm text-slate-700 mb-3">
-                          <span className="font-semibold">Objetivo:</span> {curso.objetivo || curso.Column14 || 'Sin descripción'}
+                          <span className="font-semibold">Objetivo:</span> {curso.objetivo || 'Sin descripción'}
                         </p>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                           <div>
-                            <span className="font-semibold">Horas:</span> {curso.horas || curso.Column15 || '0'}
+                            <span className="font-semibold">Horas:</span> {curso.horas || '0'}
                           </div>
                           <div>
                             <span className="font-semibold">Participantes:</span> {totalParticipantes || '0'}
                           </div>
                           <div>
-                            <span className="font-semibold">OTEC:</span> {curso.otecSugerido || curso.Column20 || 'No asignado'}
+                            <span className="font-semibold">OTEC:</span> {curso.otecSugerido || 'No asignado'}
                           </div>
                           <div>
-                            <span className="font-semibold">Responsable:</span> {curso.responsableOTIC || curso.Column7 || 'No asignado'}
+                            <span className="font-semibold">Responsable:</span> {curso.responsableOTIC || 'No asignado'}
                           </div>
                           {curso.modalidad && (
                             <div>
