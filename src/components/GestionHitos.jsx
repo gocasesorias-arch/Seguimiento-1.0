@@ -1,13 +1,21 @@
 import { useState } from 'react'
-import { CheckCircle, XCircle, Clock, Circle } from 'lucide-react'
+import {
+  CheckCircleIcon as CheckCircle,
+  XCircleIcon as XCircle,
+  ClockIcon as Clock,
+  CircleIcon as Circle
+} from './Icons.jsx'
 import { obtenerHitosPorEstado, obtenerColorPorEstado } from '../hooks/useHitos'
+import { formatearMoneda } from '../utils/cursoHelpers'
 
 const GestionHitos = ({
   cursos,
   progresoHitos,
   onToggleHito,
   onCambiarEstadoEspecial,
-  filtrosAplicados
+  onRevertirEstado,
+  filtrosAplicados,
+  lastUpdate
 }) => {
   const [cursoExpandido, setCursoExpandido] = useState(null)
 
@@ -22,14 +30,41 @@ const GestionHitos = ({
     const cumpleGerencia = filtrosAplicados.gerencia === 'Todas' ||
                            (curso.gerencia || curso.Column10) === filtrosAplicados.gerencia
     const cumpleEstado = filtrosAplicados.estado === 'Todos' || estadoActual === filtrosAplicados.estado
+    const cumpleCursoSeleccionado = filtrosAplicados.cursos.length === 0 ||
+      filtrosAplicados.cursos.includes(curso.nombre || curso.Column13)
+    const cumpleMesInicio = filtrosAplicados.mesesInicio.length === 0 ||
+      filtrosAplicados.mesesInicio.includes(String(curso.mesInicio || curso.Column2))
 
-    return cumpleVP && cumpleGerencia && cumpleEstado
+    return cumpleVP && cumpleGerencia && cumpleEstado && cumpleCursoSeleccionado && cumpleMesInicio
   })
 
   const limpiarFiltros = () => {
     // Este evento debería ser manejado por el componente padre
     window.dispatchEvent(new CustomEvent('limpiarFiltros'))
   }
+
+  // Datos para gráfico de avance por mes de inicio
+  const graficoAvance = cursosFiltrados.reduce((acc, curso) => {
+    const cursoIndex = cursos.indexOf(curso)
+    const progreso = progresoHitos[cursoIndex] || { hitos: [false, false, false, false] }
+    const completados = progreso.hitos.filter(h => h).length
+    const total = 4
+    const mesClave = String(curso.mesInicio || 'Sin mes')
+
+    if (!acc[mesClave]) {
+      acc[mesClave] = { completados: 0, total: 0 }
+    }
+
+    acc[mesClave].completados += completados
+    acc[mesClave].total += total
+    return acc
+  }, {})
+
+  const graficoOrden = Object.entries(graficoAvance).sort((a, b) => {
+    if (a[0] === 'Sin mes') return 1
+    if (b[0] === 'Sin mes') return -1
+    return Number(a[0]) - Number(b[0])
+  })
 
   return (
     <div className="space-y-4">
@@ -40,6 +75,38 @@ const GestionHitos = ({
         <p className="text-sm text-slate-600 mb-6">
           Marca los hitos completados para cada curso. Cuando completes los 4 hitos, el curso avanzará automáticamente al siguiente estado.
         </p>
+        <div className="text-xs text-slate-500 mb-4">
+          Fecha última actualización: <span className="font-semibold text-slate-700">{lastUpdate?.toLocaleString()}</span>
+        </div>
+
+        {/* Gráfico de avance de hitos */}
+        {graficoOrden.length > 0 && (
+          <div className="mb-6 p-4 bg-slate-50 border-2 border-slate-200 rounded-lg">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-semibold text-slate-700">Gráfico de avance de hitos (pendiente según fecha de inicio)</h3>
+              <span className="text-xs text-slate-500">Hitos realizados vs totales proyectados</span>
+            </div>
+            <div className="space-y-3">
+              {graficoOrden.map(([mes, data]) => {
+                const porcentaje = data.total > 0 ? (data.completados / data.total) * 100 : 0
+                return (
+                  <div key={mes}>
+                    <div className="flex items-center justify-between text-xs text-slate-600 mb-1">
+                      <span>{mes === 'Sin mes' ? 'Sin mes de inicio' : `Mes ${mes}`}</span>
+                      <span>{data.completados}/{data.total} hitos</span>
+                    </div>
+                    <div className="w-full bg-white border-2 border-slate-200 rounded-full h-3 overflow-hidden">
+                      <div
+                        className="bg-gradient-to-r from-green-400 to-blue-500 h-3"
+                        style={{ width: `${porcentaje}%` }}
+                      />
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
 
         {cursosFiltrados.length === 0 ? (
           <div className="text-center py-12 text-slate-500">
@@ -65,6 +132,12 @@ const GestionHitos = ({
               const colorEstado = obtenerColorPorEstado(estadoActual)
               const hitosCompletados = progreso.hitos.filter(h => h).length
               const expandido = cursoExpandido === cursoOriginalIndex
+              const totalParticipantes = curso.participantesPorMes
+                ? Object.values(curso.participantesPorMes).reduce((a, b) => a + b, 0)
+                : (curso.participacion_real || 0)
+              const costoTotal = curso.valorPersona && totalParticipantes
+                ? formatearMoneda(curso.valorPersona * totalParticipantes)
+                : null
 
               return (
                 <div
@@ -126,7 +199,7 @@ const GestionHitos = ({
                             <span className="font-semibold">Horas:</span> {curso.horas || curso.Column15 || '0'}
                           </div>
                           <div>
-                            <span className="font-semibold">Participantes:</span> {curso.valorPersona || curso['18348'] || curso.participacion_real || '0'}
+                            <span className="font-semibold">Participantes:</span> {totalParticipantes || '0'}
                           </div>
                           <div>
                             <span className="font-semibold">OTEC:</span> {curso.otecSugerido || curso.Column20 || 'No asignado'}
@@ -134,6 +207,16 @@ const GestionHitos = ({
                           <div>
                             <span className="font-semibold">Responsable:</span> {curso.responsableOTIC || curso.Column7 || 'No asignado'}
                           </div>
+                          {curso.modalidad && (
+                            <div>
+                              <span className="font-semibold">Modalidad:</span> {curso.modalidad}
+                            </div>
+                          )}
+                          {costoTotal && (
+                            <div>
+                              <span className="font-semibold">Costo total:</span> {costoTotal}
+                            </div>
+                          )}
                         </div>
                       </div>
 
@@ -193,12 +276,20 @@ const GestionHitos = ({
                           <Clock size={20} />
                           Postergar Curso
                         </button>
+                        {progreso.estadoAnterior && (
+                          <button
+                            onClick={() => onRevertirEstado(cursoOriginalIndex)}
+                            className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-blue-100 text-blue-700 border-2 border-blue-300 rounded-lg font-semibold hover:bg-blue-200 transition-all"
+                          >
+                            Deshacer cambio de estado
+                          </button>
+                        )}
                       </div>
 
                       {hitosCompletados === 4 && (
                         <div className="mt-4 p-4 bg-green-100 border-2 border-green-500 rounded-lg text-center">
                           <p className="text-green-800 font-semibold">
-                            ✅ ¡Todos los hitos completados! El curso pasará automáticamente al siguiente estado.
+                            ✅ El cuso ha finalizado el registro de hitos exitosamente.
                           </p>
                         </div>
                       )}

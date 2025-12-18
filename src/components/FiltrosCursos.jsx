@@ -6,6 +6,12 @@ const FiltrosCursos = ({
   onLimpiarFiltros,
   cursos
 }) => {
+  // Cursos disponibles
+  const cursosDisponibles = useMemo(() => {
+    const nombres = new Set(cursos.map(c => c.nombre).filter(Boolean))
+    return Array.from(nombres).sort()
+  }, [cursos])
+
   // VPs únicas
   const vpsDisponibles = useMemo(() => {
     const vps = new Set(cursos.map(c => c.vp).filter(Boolean))
@@ -35,11 +41,19 @@ const FiltrosCursos = ({
     return ['Todos', ...Array.from(estados).sort()]
   }, [cursos])
 
+  // Meses de inicio disponibles
+  const mesesDisponibles = useMemo(() => {
+    const meses = new Set(cursos.map(c => c.mesInicio).filter(Boolean))
+    return Array.from(meses).map(m => String(m)).sort((a, b) => Number(a) - Number(b))
+  }, [cursos])
+
   // Contar filtros activos
   const filtrosActivos = Object.entries(filtros).filter(([key, value]) => {
     if (key === 'vp') return value !== 'Todos'
     if (key === 'gerencia') return value !== 'Todas'
     if (key === 'estado') return value !== 'Todos'
+    if (key === 'cursos') return value.length > 0
+    if (key === 'mesesInicio') return value.length > 0
     return false
   }).length
 
@@ -132,6 +146,52 @@ const FiltrosCursos = ({
           </select>
           <p className="text-xs text-gray-500 mt-1">
             {estadosDisponibles.length - 1} estados disponibles
+          </p>
+        </div>
+
+        {/* Filtro Cursos (multi selección) */}
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            Cursos (selección múltiple)
+          </label>
+          <select
+            multiple
+            value={filtros.cursos}
+            onChange={(e) => {
+              const valores = Array.from(e.target.selectedOptions).map(opt => opt.value)
+              onFiltroChange('cursos', valores)
+            }}
+            className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition-colors h-32"
+          >
+            {cursosDisponibles.map(nombre => (
+              <option key={nombre} value={nombre}>{nombre}</option>
+            ))}
+          </select>
+          <p className="text-xs text-gray-500 mt-1">
+            Selecciona uno o varios cursos
+          </p>
+        </div>
+
+        {/* Filtro Mes de Inicio (multi selección) */}
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            Mes Inicio (selección múltiple)
+          </label>
+          <select
+            multiple
+            value={filtros.mesesInicio}
+            onChange={(e) => {
+              const valores = Array.from(e.target.selectedOptions).map(opt => opt.value)
+              onFiltroChange('mesesInicio', valores)
+            }}
+            className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition-colors h-32"
+          >
+            {mesesDisponibles.map(mes => (
+              <option key={mes} value={mes}>Mes {mes}</option>
+            ))}
+          </select>
+          <p className="text-xs text-gray-500 mt-1">
+            Filtra por mes de inicio programado
           </p>
         </div>
       </div>
