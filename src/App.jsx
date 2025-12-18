@@ -1,53 +1,86 @@
 import { useState, useEffect, useMemo } from 'react'
+import { useAuth } from './context/AuthContext'
 import FiltrosCursos from './components/FiltrosCursos'
 import TarjetaCurso from './components/TarjetaCurso'
-import { normalizarCurso, validarCurso } from './utils/cursoHelpers'
+import LoginForm from './components/LoginForm'
+import { cursosService } from './services/apiService'
+import { validarCurso } from './utils/cursoHelpers'
 
 function App() {
+  const { user, isAuthenticated, logout } = useAuth()
   const [cursos, setCursos] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [showLogin, setShowLogin] = useState(false)
+  const [apiMode, setApiMode] = useState(true) // true = API, false = JSON
   const [filtros, setFiltros] = useState({
     vp: 'Todos',
     gerencia: 'Todas',
     estado: 'Todos'
   })
 
-  // Cargar y normalizar datos
+  // Cargar datos desde API o JSON
   useEffect(() => {
     const cargarDatos = async () => {
       try {
         setLoading(true)
         setError(null)
 
-        const response = await fetch('/Seguimiento-1.0/cursos.json')
-
-        if (!response.ok) {
-          throw new Error(`Error HTTP: ${response.status} - No se pudo cargar el archivo de datos`)
-        }
-
-        const data = await response.json()
-
-        if (!Array.isArray(data) || data.length === 0) {
-          throw new Error('El archivo de datos está vacío o tiene formato incorrecto')
-        }
-
-        // Normalizar cursos (saltar primera fila que son headers)
-        const cursosNormalizados = data.slice(1).map(cursoRaw => {
+        if (apiMode) {
+          // Modo API: Obtener desde backend
           try {
-            return normalizarCurso(cursoRaw)
-          } catch (err) {
-            console.error('Error normalizando curso:', err)
-            return null
-          }
-        }).filter(Boolean) // Eliminar nulls
+            const response = await cursosService.getCursos()
 
-        // Validar cursos
-        const cursosValidos = cursosNormalizados.filter(curso => {
-          const { esValido, errores } = validarCurso(curso)
-          if (!esValido) {
-            console.warn(`Curso "${curso.nombre}" tiene errores:`, errores)
+            if (response.success && Array.isArray(response.data)) {
+              // Los datos ya vienen normalizados desde la BD
+              const cursosValidos = response.data.filter(curso => {
+                const { esValido, errores } = validarCurso(curso)
+                if (!esValido) {
+                  console.warn(`Curso "${curso.nombre}" tiene errores:`, errores)
+                }
+                return esValido
+              })
+
+              setCursos(cursosValidos)
+              console.log(`✅ ${cursosValidos.length} cursos cargados desde API`)
+            } else {
+              throw new Error('Formato de datos inválido desde API')
+            }
+          } catch (apiError) {
+            console.warn('API no disponible, cargando desde JSON local:', apiError)
+            setApiMode(false) // Fallback a JSON
+            return // Triggerea otro useEffect
           }
+        } else {
+          // Modo JSON: Fallback al archivo local
+          const response = await fetch('/Seguimiento-1.0/cursos.json')
+
+          if (!response.ok) {
+            throw new Error(`Error HTTP: ${response.status}`)
+          }
+
+          const data = await response.json()
+
+          if (!Array.isArray(data) || data.length === 0) {
+            throw new Error('El archivo de datos está vacío')
+          }
+
+          // Normalizar desde JSON
+          const { normalizarCurso } = await import('./utils/cursoHelpers')
+          const cursosNormalizados = data.slice(1).map(cursoRaw => {
+            try {
+              return normalizarCurso(cursoRaw)
+            } catch (err) {
+              console.error('Error normalizando curso:', err)
+              return null
+            }
+          }).filter(Boolean)
+
+          const cursosValidos = cursosNormalizados.filter(curso => {
+            const { esValido, errores } = validarCurso(curso)
+            if (!esValido) {
+              console.warn(`Curso "${curso.nombre}" tiene errores:`, errores)
+            }
           return esValido
         })
 
@@ -145,21 +178,57 @@ function App() {
         {/* Header */}
         <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
           <div className="flex items-center justify-between flex-wrap gap-4">
-            <div>
+            <div className="flex-1">
               <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2">
                 📊 Sistema de Seguimiento de Capacitaciones
               </h1>
-              <p className="text-gray-600">
-                Gestión integral de capacitaciones - <span className="font-semibold">Modelo Normalizado v2.0</span>
-              </p>
+              <div className="flex items-center gap-3 flex-wrap">
+                <p className="text-gray-600">
+                  Gestión integral de capacitaciones - <span className="font-semibold">Fase 3: Backend API</span>
+                </p>
+                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                  apiMode
+                    ? 'bg-green-100 text-green-700'
+                    : 'bg-yellow-100 text-yellow-700'
+                }`}>
+                  {apiMode ? '🟢 API Backend' : '📁 JSON Local'}
+                </span>
+              </div>
             </div>
-            <div className="text-right">
-              <div className="text-sm text-gray-500">Total en sistema</div>
-              <div className="text-3xl font-bold text-blue-600">{cursos.length}</div>
-              <div className="text-xs text-gray-500">cursos validados</div>
+
+            <div className="flex items-center gap-4">
+              <div className="text-right">
+                <div className="text-sm text-gray-500">Total en sistema</div>
+                <div className="text-3xl font-bold text-blue-600">{cursos.length}</div>
+                <div className="text-xs text-gray-500">cursos validados</div>
+              </div>
+
+              {isAuthenticated ? (
+                <div className="flex flex-col items-end gap-2">
+                  <div className="text-sm text-gray-600">
+                    Hola, <span className="font-semibold">{user?.nombre}</span>
+                  </div>
+                  <button
+                    onClick={logout}
+                    className="px-4 py-2 bg-red-500 text-white text-sm rounded-lg hover:bg-red-600 transition-colors font-semibold"
+                  >
+                    Cerrar Sesión
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setShowLogin(true)}
+                  className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors font-semibold"
+                >
+                  Iniciar Sesión
+                </button>
+              )}
             </div>
           </div>
         </div>
+
+        {/* Login Modal */}
+        {showLogin && <LoginForm onClose={() => setShowLogin(false)} />}
 
         {/* Estadísticas Mejoradas */}
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-6">
