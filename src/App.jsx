@@ -150,23 +150,12 @@ function App() {
   }, [cursos, progresoHitos])
 
   const cursosFiltrados = useMemo(() => {
-    const normalizar = (valor) => (valor ?? '').toString().trim().toLowerCase()
-
     return cursosConEstado.filter(curso => {
-      const vpCurso = normalizar(curso.vp)
-      const gerenciaCurso = normalizar(curso.gerencia)
-      const estadoCurso = normalizar(curso.estadoActual)
-      const nombreCurso = normalizar(curso.nombre)
-      const mesCurso = normalizar(curso.mesInicio || curso.Column2)
-
-      const cumpleVP = filtros.vp === 'Todos' || vpCurso === normalizar(filtros.vp)
-      const cumpleGerencia = filtros.gerencia === 'Todas' || gerenciaCurso === normalizar(filtros.gerencia)
-      const cumpleEstado = filtros.estado === 'Todos' || estadoCurso === normalizar(filtros.estado)
-      const cumpleCursoSeleccionado =
-        filtros.cursos.length === 0 || filtros.cursos.some(sel => normalizar(sel) === nombreCurso)
-      const cumpleMesInicio =
-        filtros.mesesInicio.length === 0 || filtros.mesesInicio.some(sel => normalizar(sel) === mesCurso)
-
+      const cumpleVP = filtros.vp === 'Todos' || (curso.vp || '').toUpperCase() === filtros.vp.toUpperCase()
+      const cumpleGerencia = filtros.gerencia === 'Todas' || curso.gerencia === filtros.gerencia
+      const cumpleEstado = filtros.estado === 'Todos' || curso.estadoActual === filtros.estado
+      const cumpleCursoSeleccionado = filtros.cursos.length === 0 || filtros.cursos.includes(curso.nombre)
+      const cumpleMesInicio = filtros.mesesInicio.length === 0 || filtros.mesesInicio.includes(String(curso.mesInicio))
       return cumpleVP && cumpleGerencia && cumpleEstado && cumpleCursoSeleccionado && cumpleMesInicio
     })
   }, [cursosConEstado, filtros])

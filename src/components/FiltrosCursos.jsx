@@ -61,40 +61,18 @@ const FiltrosCursos = ({
     return false
   }).length
 
-  const [dropdownAbierto, setDropdownAbierto] = useState(null)
-  const cursosRef = useRef(null)
-  const mesesRef = useRef(null)
-
-  useEffect(() => {
-    const handleClickFuera = (event) => {
-      if (!dropdownAbierto) return
-
-      const refActual = dropdownAbierto === 'cursos' ? cursosRef.current : mesesRef.current
-      if (refActual && !refActual.contains(event.target)) {
-        setDropdownAbierto(null)
-      }
-    }
-
-    document.addEventListener('mousedown', handleClickFuera)
-    return () => document.removeEventListener('mousedown', handleClickFuera)
-  }, [dropdownAbierto])
-
-  const renderMultiSelect = (label, placeholder, options, selected, onChange, clave) => (
-    <div ref={clave === 'cursos' ? cursosRef : mesesRef} className="relative">
+  const renderMultiSelect = (label, placeholder, options, selected, onChange) => (
+    <div>
       <label className="block text-sm font-semibold text-gray-700 mb-2">
         {label}
       </label>
-      <button
-        type="button"
-        onClick={() => setDropdownAbierto(prev => (prev === clave ? null : clave))}
-        className={`w-full px-4 py-2 border-2 rounded-lg focus:outline-none focus:border-blue-500 text-left flex items-center justify-between text-sm transition-colors ${dropdownAbierto === clave ? 'border-blue-500 bg-blue-50' : 'border-gray-300'}`}
-      >
-        <span className="truncate">
-          {selected.length === 0 ? placeholder : `${selected.length} seleccionados`}
-        </span>
-        <span className="text-xs text-slate-500">{dropdownAbierto === clave ? '▲' : '▼'}</span>
-      </button>
-      {dropdownAbierto === clave && (
+      <details className="relative group">
+        <summary className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 cursor-pointer list-none flex items-center justify-between text-sm">
+          <span className="truncate">
+            {selected.length === 0 ? placeholder : `${selected.length} seleccionados`}
+          </span>
+          <span className="text-xs text-slate-500">▼</span>
+        </summary>
         <div className="absolute left-0 right-0 mt-2 bg-white border-2 border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto z-20">
           {options.map(opt => (
             <label
@@ -110,7 +88,6 @@ const FiltrosCursos = ({
                     ? selected.filter(v => v !== opt.value)
                     : [...selected, opt.value]
                   onChange(nuevo)
-                  setDropdownAbierto(null)
                 }}
               />
               <span>{opt.label}</span>
@@ -120,7 +97,7 @@ const FiltrosCursos = ({
             <div className="px-3 py-2 text-xs text-slate-500">No hay opciones disponibles</div>
           )}
         </div>
-      )}
+      </details>
     </div>
   )
 
@@ -222,8 +199,7 @@ const FiltrosCursos = ({
           'Elige uno o varios cursos',
           cursosDisponibles.map(nombre => ({ value: nombre, label: nombre })),
           filtros.cursos,
-          (valores) => onFiltroChange('cursos', valores),
-          'cursos'
+          (valores) => onFiltroChange('cursos', valores)
         )}
 
         {/* Filtro Mes de Inicio (multi selección con dropdown) */}
@@ -232,8 +208,7 @@ const FiltrosCursos = ({
           'Selecciona meses de inicio',
           mesesDisponibles.map(mes => ({ value: mes, label: `Mes ${mes}` })),
           filtros.mesesInicio,
-          (valores) => onFiltroChange('mesesInicio', valores),
-          'meses'
+          (valores) => onFiltroChange('mesesInicio', valores)
         )}
       </div>
     </div>
