@@ -1,8 +1,13 @@
 import { obtenerColorEstado, formatearMoneda, obtenerNombreMes } from '../utils/cursoHelpers'
 
 const TarjetaCurso = ({ curso, index }) => {
-  const totalParticipantes = Object.values(curso.participantesPorMes).reduce((a, b) => a + b, 0)
-  const costoTotal = curso.valorPersona * totalParticipantes
+  const totalParticipantes = curso.participantesPorMes
+    ? Object.values(curso.participantesPorMes).reduce((a, b) => a + b, 0)
+    : (curso.participacion_real || 0)
+  const costoTotal = curso.valorPersona && totalParticipantes
+    ? curso.valorPersona * totalParticipantes
+    : 0
+  const estadoVisible = curso.estadoActual || curso.estado
 
   return (
     <div className="border-2 border-gray-200 rounded-lg p-4 hover:border-blue-400 transition-all hover:shadow-md bg-white">
@@ -39,7 +44,7 @@ const TarjetaCurso = ({ curso, index }) => {
                 👥 {totalParticipantes} participantes
               </span>
             )}
-            {curso.mesInicio > 0 && (
+            {Number(curso.mesInicio) > 0 && (
               <span className="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full">
                 📅 {obtenerNombreMes(curso.mesInicio)}
               </span>
@@ -72,8 +77,8 @@ const TarjetaCurso = ({ curso, index }) => {
         </div>
 
         {/* Estado */}
-        <div className={`px-4 py-2 rounded-lg border-2 font-semibold text-sm whitespace-nowrap self-start ${obtenerColorEstado(curso.estado)}`}>
-          {curso.estado}
+        <div className={`px-4 py-2 rounded-lg border-2 font-semibold text-sm whitespace-nowrap self-start ${obtenerColorEstado(estadoVisible)}`}>
+          {estadoVisible}
         </div>
       </div>
     </div>
