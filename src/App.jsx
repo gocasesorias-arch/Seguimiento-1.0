@@ -1,24 +1,4 @@
-import { useState, useEffect } from 'react'
-
 function App() {
-  const [cursos, setCursos] = useState([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    fetch('/cursos.json')
-      .then(r => r.json())
-      .then(data => {
-        setCursos(data.slice(1)) // Remove header row
-        setLoading(false)
-      })
-      .catch(err => {
-        console.error('Error:', err)
-        setLoading(false)
-      })
-  }, [])
-
-  if (loading) return <div style={{padding: '20px'}}>Cargando...</div>
-
   return (
     <div style={{padding: '20px', fontFamily: 'Arial'}}>
       <h1>Sistema de Seguimiento de Capacitaciones</h1>
