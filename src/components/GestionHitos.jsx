@@ -1,5 +1,10 @@
 import { useState } from 'react'
-import { CheckCircle, XCircle, Clock, Circle } from 'lucide-react'
+import {
+  CheckCircleIcon as CheckCircle,
+  XCircleIcon as XCircle,
+  ClockIcon as Clock,
+  CircleIcon as Circle
+} from './Icons.jsx'
 import { obtenerHitosPorEstado, obtenerColorPorEstado } from '../hooks/useHitos'
 
 const GestionHitos = ({

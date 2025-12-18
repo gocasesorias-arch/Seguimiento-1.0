@@ -1,8 +1,14 @@
 import { useState, useEffect } from 'react'
 import {
-  Circle, CheckCircle, Clock, AlertCircle,
-  XCircle, Award, ChevronRight, ChevronLeft
-} from 'lucide-react'
+  CircleIcon as Circle,
+  CheckCircleIcon as CheckCircle,
+  ClockIcon as Clock,
+  AlertCircleIcon as AlertCircle,
+  XCircleIcon as XCircle,
+  AwardIcon as Award,
+  ChevronRightIcon as ChevronRight,
+  ChevronLeftIcon as ChevronLeft
+} from '../components/Icons.jsx'
 
 /**
  * Hook para gestión de hitos
