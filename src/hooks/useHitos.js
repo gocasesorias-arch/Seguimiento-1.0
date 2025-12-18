@@ -39,7 +39,8 @@ export const useHitos = (cursos) => {
     setProgresoHitos(prev => {
       const cursoProgreso = prev[cursoIndex] || {
         hitos: [false, false, false, false],
-        estadoActual: cursos[cursoIndex]?.estado || cursos[cursoIndex]?.Column4
+        estadoActual: cursos[cursoIndex]?.estado || cursos[cursoIndex]?.Column4,
+        estadoAnterior: null
       }
 
       const nuevosHitos = [...cursoProgreso.hitos]
@@ -61,7 +62,8 @@ export const useHitos = (cursos) => {
             ...prev,
             [cursoIndex]: {
               hitos: [false, false, false, false],
-              estadoActual: nuevoEstado
+              estadoActual: nuevoEstado,
+              estadoAnterior: estadoActual
             }
           }
         }
@@ -79,16 +81,41 @@ export const useHitos = (cursos) => {
   }
 
   const cambiarEstadoEspecial = (cursoIndex, nuevoEstado) => {
-    setProgresoHitos(prev => ({
-      ...prev,
-      [cursoIndex]: {
+    setProgresoHitos(prev => {
+      const cursoProgreso = prev[cursoIndex] || {
         hitos: [false, false, false, false],
-        estadoActual: nuevoEstado
+        estadoActual: cursos[cursoIndex]?.estado || cursos[cursoIndex]?.Column4,
+        estadoAnterior: null
       }
-    }))
+
+      return {
+        ...prev,
+        [cursoIndex]: {
+          hitos: [false, false, false, false],
+          estadoActual: nuevoEstado,
+          estadoAnterior: cursoProgreso.estadoActual
+        }
+      }
+    })
   }
 
-  return { progresoHitos, toggleHito, cambiarEstadoEspecial }
+  const revertirEstado = (cursoIndex) => {
+    setProgresoHitos(prev => {
+      const cursoProgreso = prev[cursoIndex]
+      if (!cursoProgreso?.estadoAnterior) return prev
+
+      return {
+        ...prev,
+        [cursoIndex]: {
+          hitos: [false, false, false, false],
+          estadoActual: cursoProgreso.estadoAnterior,
+          estadoAnterior: null
+        }
+      }
+    })
+  }
+
+  return { progresoHitos, toggleHito, cambiarEstadoEspecial, revertirEstado }
 }
 
 /**

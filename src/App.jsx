@@ -16,14 +16,17 @@ function App() {
   const [showLogin, setShowLogin] = useState(false)
   const [apiMode, setApiMode] = useState(true) // true = API, false = JSON
   const [vistaActual, setVistaActual] = useState('listado') // 'listado' o 'gestion'
+  const [lastUpdate, setLastUpdate] = useState(new Date())
   const [filtros, setFiltros] = useState({
     vp: 'Todos',
     gerencia: 'Todas',
-    estado: 'Todos'
+    estado: 'Todos',
+    cursos: [],
+    mesesInicio: []
   })
 
   // Hook de gestión de hitos
-  const { progresoHitos, toggleHito, cambiarEstadoEspecial } = useHitos(cursos)
+  const { progresoHitos, toggleHito, cambiarEstadoEspecial, revertirEstado } = useHitos(cursos)
 
   // Cargar datos desde API o JSON
   useEffect(() => {
@@ -102,6 +105,7 @@ function App() {
           console.log(`✅ ${cursosValidos.length} cursos cargados desde JSON`)
         }
 
+        setLastUpdate(new Date())
         setLoading(false)
       } catch (err) {
         console.error('Error cargando datos:', err)
@@ -119,7 +123,9 @@ function App() {
       setFiltros({
         vp: 'Todos',
         gerencia: 'Todas',
-        estado: 'Todos'
+        estado: 'Todos',
+        cursos: [],
+        mesesInicio: []
       })
     }
 
@@ -133,7 +139,9 @@ function App() {
       const cumpleVP = filtros.vp === 'Todos' || (curso.vp || '').toUpperCase() === filtros.vp.toUpperCase()
       const cumpleGerencia = filtros.gerencia === 'Todas' || curso.gerencia === filtros.gerencia
       const cumpleEstado = filtros.estado === 'Todos' || curso.estado === filtros.estado
-      return cumpleVP && cumpleGerencia && cumpleEstado
+      const cumpleCursoSeleccionado = filtros.cursos.length === 0 || filtros.cursos.includes(curso.nombre)
+      const cumpleMesInicio = filtros.mesesInicio.length === 0 || filtros.mesesInicio.includes(String(curso.mesInicio))
+      return cumpleVP && cumpleGerencia && cumpleEstado && cumpleCursoSeleccionado && cumpleMesInicio
     })
   }, [cursos, filtros])
 
@@ -144,7 +152,9 @@ function App() {
       realizados: cursosFiltrados.filter(c => c.estado === 'Realizado').length,
       enEjecucion: cursosFiltrados.filter(c => c.estado === 'En Ejecución').length,
       enProceso: cursosFiltrados.filter(c => c.estado === 'En Proceso').length,
-      planificacion: cursosFiltrados.filter(c => c.estado === 'Planificación').length,
+      programado: cursosFiltrados.filter(c => c.estado === 'Programado').length,
+      planificado: cursosFiltrados.filter(c => c.estado === 'Planificado' || c.estado === 'Planificación').length,
+      pendiente: cursosFiltrados.filter(c => c.estado === 'Pendiente').length,
       totalHoras: cursosFiltrados.reduce((sum, c) => sum + (c.horas || 0), 0),
       totalParticipantes: cursosFiltrados.reduce((sum, c) => {
         if (c.participantesPorMes) {
@@ -164,8 +174,25 @@ function App() {
     setFiltros({
       vp: 'Todos',
       gerencia: 'Todas',
-      estado: 'Todos'
+      estado: 'Todos',
+      cursos: [],
+      mesesInicio: []
     })
+  }
+
+  const handleToggleHito = (cursoIndex, hitoIndex) => {
+    toggleHito(cursoIndex, hitoIndex)
+    setLastUpdate(new Date())
+  }
+
+  const handleCambiarEstadoEspecial = (cursoIndex, nuevoEstado) => {
+    cambiarEstadoEspecial(cursoIndex, nuevoEstado)
+    setLastUpdate(new Date())
+  }
+
+  const handleRevertirEstado = (cursoIndex) => {
+    revertirEstado(cursoIndex)
+    setLastUpdate(new Date())
   }
 
   // Estado de carga
@@ -283,7 +310,7 @@ function App() {
         {showLogin && <LoginForm onClose={() => setShowLogin(false)} />}
 
         {/* Estadísticas Mejoradas */}
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 mb-4">
           <div className="bg-white rounded-lg shadow p-4">
             <div className="text-2xl font-bold text-blue-600">{estadisticas.total}</div>
             <div className="text-xs text-gray-600">Filtrados</div>
@@ -301,6 +328,18 @@ function App() {
             <div className="text-xs text-gray-600">En Proceso</div>
           </div>
           <div className="bg-white rounded-lg shadow p-4">
+            <div className="text-2xl font-bold text-yellow-600">{estadisticas.programado}</div>
+            <div className="text-xs text-gray-600">Programado</div>
+          </div>
+          <div className="bg-white rounded-lg shadow p-4">
+            <div className="text-2xl font-bold text-cyan-600">{estadisticas.planificado}</div>
+            <div className="text-xs text-gray-600">Planificado</div>
+          </div>
+          <div className="bg-white rounded-lg shadow p-4">
+            <div className="text-2xl font-bold text-slate-700">{estadisticas.pendiente}</div>
+            <div className="text-xs text-gray-600">Pendiente</div>
+          </div>
+          <div className="bg-white rounded-lg shadow p-4">
             <div className="text-2xl font-bold text-purple-600">{estadisticas.totalHoras.toLocaleString()}</div>
             <div className="text-xs text-gray-600">Horas Totales</div>
           </div>
@@ -308,6 +347,9 @@ function App() {
             <div className="text-2xl font-bold text-orange-600">{estadisticas.totalParticipantes.toLocaleString()}</div>
             <div className="text-xs text-gray-600">Participantes</div>
           </div>
+        </div>
+        <div className="text-sm text-gray-600 mb-6">
+          Fecha última actualización: <span className="font-semibold">{lastUpdate.toLocaleString()}</span>
         </div>
 
         {/* Filtros con cascada */}
@@ -357,9 +399,11 @@ function App() {
           <GestionHitos
             cursos={cursos}
             progresoHitos={progresoHitos}
-            onToggleHito={toggleHito}
-            onCambiarEstadoEspecial={cambiarEstadoEspecial}
+            onToggleHito={handleToggleHito}
+            onCambiarEstadoEspecial={handleCambiarEstadoEspecial}
+            onRevertirEstado={handleRevertirEstado}
             filtrosAplicados={filtros}
+            lastUpdate={lastUpdate}
           />
         )}
 
