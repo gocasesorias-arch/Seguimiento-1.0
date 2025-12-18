@@ -70,158 +70,17 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 md:p-6">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2">
-            📊 Sistema de Seguimiento de Capacitaciones
-          </h1>
-          <p className="text-gray-600">
-            Gestión integral de capacitaciones por VP y Gerencia
-          </p>
-        </div>
-
-        {/* Estadísticas */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-white rounded-lg shadow p-4">
-            <div className="text-3xl font-bold text-blue-600">{estadisticas.total}</div>
-            <div className="text-sm text-gray-600">Total Cursos</div>
+    <div style={{padding: '20px', fontFamily: 'Arial'}}>
+      <h1>Sistema de Seguimiento de Capacitaciones</h1>
+      <p>Total de cursos: {cursos.length}</p>
+      <div style={{maxHeight: '400px', overflow: 'auto', border: '1px solid #ccc', padding: '10px'}}>
+        {cursos.slice(0, 10).map((curso) => (
+          <div key={curso.Column1 || curso.Column13} style={{padding: '10px', borderBottom: '1px solid #eee'}}>
+            <strong>{curso.Column13 || 'Sin nombre'}</strong>
+            <br/>
+            <small>{curso.Column10} - {curso.Column4}</small>
           </div>
-          <div className="bg-white rounded-lg shadow p-4">
-            <div className="text-3xl font-bold text-green-600">{estadisticas.realizados}</div>
-            <div className="text-sm text-gray-600">Realizados</div>
-          </div>
-          <div className="bg-white rounded-lg shadow p-4">
-            <div className="text-3xl font-bold text-blue-600">{estadisticas.enEjecucion}</div>
-            <div className="text-sm text-gray-600">En Ejecución</div>
-          </div>
-          <div className="bg-white rounded-lg shadow p-4">
-            <div className="text-3xl font-bold text-gray-600">{estadisticas.planificacion}</div>
-            <div className="text-sm text-gray-600">Planificación</div>
-          </div>
-        </div>
-
-        {/* Filtros */}
-        <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-          <h2 className="text-xl font-bold text-gray-800 mb-4">🔍 Filtros</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Vicepresidencia
-              </label>
-              <select
-                value={filtros.vp}
-                onChange={(e) => setFiltros({...filtros, vp: e.target.value})}
-                className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
-              >
-                {vpsDisponibles.map(vp => (
-                  <option key={vp} value={vp}>{vp}</option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Gerencia
-              </label>
-              <select
-                value={filtros.gerencia}
-                onChange={(e) => setFiltros({...filtros, gerencia: e.target.value})}
-                className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
-              >
-                {gerenciasDisponibles.map(ger => (
-                  <option key={ger} value={ger}>{ger}</option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Estado
-              </label>
-              <select
-                value={filtros.estado}
-                onChange={(e) => setFiltros({...filtros, estado: e.target.value})}
-                className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
-              >
-                <option value="Todos">Todos</option>
-                <option value="Realizado">Realizado</option>
-                <option value="En Ejecución">En Ejecución</option>
-                <option value="En Proceso">En Proceso</option>
-                <option value="Planificación">Planificación</option>
-                <option value="Suspendido">Suspendido</option>
-                <option value="Postergado">Postergado</option>
-              </select>
-            </div>
-          </div>
-
-          <button
-            onClick={() => setFiltros({vp: 'Todos', gerencia: 'Todas', estado: 'Todos'})}
-            className="mt-4 px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-semibold"
-          >
-            🗑️ Limpiar Filtros
-          </button>
-        </div>
-
-        {/* Lista de Cursos */}
-        <div className="bg-white rounded-xl shadow-lg p-6">
-          <h2 className="text-xl font-bold text-gray-800 mb-4">
-            📚 Cursos ({cursosFiltrados.length})
-          </h2>
-
-          {cursosFiltrados.length === 0 ? (
-            <div className="text-center py-12 text-gray-500">
-              <div className="text-6xl mb-4">📭</div>
-              <p className="text-lg">No hay cursos que cumplan los filtros seleccionados</p>
-            </div>
-          ) : (
-            <div className="space-y-3 max-h-[600px] overflow-y-auto">
-              {cursosFiltrados.map((curso, index) => (
-                <div key={index} className="border-2 border-gray-200 rounded-lg p-4 hover:border-blue-400 transition-all hover:shadow-md">
-                  <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3">
-                    <div className="flex-1">
-                      <h3 className="font-bold text-lg text-gray-800 mb-2">
-                        {curso.Column13 || 'Sin nombre'}
-                      </h3>
-                      <p className="text-sm text-gray-600 mb-3">
-                        {curso.Column14 || 'Sin descripción'}
-                      </p>
-                      <div className="flex flex-wrap gap-2 text-xs">
-                        <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full font-semibold">
-                          {curso.Column9 || 'Sin VP'}
-                        </span>
-                        <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full">
-                          {curso.Column10 || 'Sin gerencia'}
-                        </span>
-                        <span className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full">
-                          {curso.Column15 || 0} horas
-                        </span>
-                        <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full">
-                          👤 {curso['18348'] || 0} participantes
-                        </span>
-                        {curso.Column7 && (
-                          <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full">
-                            📋 {curso.Column7}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <div className={`px-4 py-2 rounded-lg border-2 font-semibold text-sm whitespace-nowrap ${getEstadoColor(curso.Column4)}`}>
-                      {curso.Column4 || 'Sin estado'}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Footer */}
-        <div className="mt-6 text-center text-gray-600 text-sm">
-          <p>© 2024 Sistema de Seguimiento de Capacitaciones</p>
-          <p className="mt-1">Versión 1.0 - Deployado en GitHub Pages</p>
-        </div>
+        ))}
       </div>
     </div>
   )
