@@ -40,7 +40,8 @@ export const useHitos = (cursos) => {
       const cursoProgreso = prev[cursoIndex] || {
         hitos: [false, false, false, false],
         estadoActual: cursos[cursoIndex]?.estado || cursos[cursoIndex]?.Column4,
-        estadoAnterior: null
+        estadoAnterior: null,
+        historialEstados: []
       }
 
       const nuevosHitos = [...cursoProgreso.hitos]
@@ -58,12 +59,22 @@ export const useHitos = (cursos) => {
         if (indexActual >= 0 && indexActual < flujoEstados.length - 1) {
           nuevoEstado = flujoEstados[indexActual + 1]
           // Reset hitos para el nuevo estado
+          const historialActualizado = [
+            ...(cursoProgreso.historialEstados || []),
+            {
+              estado: estadoActual,
+              fecha: new Date().toISOString(),
+              motivo: 'Avance automático por hitos completados'
+            }
+          ]
+
           return {
             ...prev,
             [cursoIndex]: {
               hitos: [false, false, false, false],
               estadoActual: nuevoEstado,
-              estadoAnterior: estadoActual
+              estadoAnterior: estadoActual,
+              historialEstados: historialActualizado
             }
           }
         }
@@ -74,7 +85,8 @@ export const useHitos = (cursos) => {
         [cursoIndex]: {
           ...cursoProgreso,
           hitos: nuevosHitos,
-          estadoActual: nuevoEstado
+          estadoActual: nuevoEstado,
+          historialEstados: cursoProgreso.historialEstados || []
         }
       }
     })
@@ -85,15 +97,26 @@ export const useHitos = (cursos) => {
       const cursoProgreso = prev[cursoIndex] || {
         hitos: [false, false, false, false],
         estadoActual: cursos[cursoIndex]?.estado || cursos[cursoIndex]?.Column4,
-        estadoAnterior: null
+        estadoAnterior: null,
+        historialEstados: []
       }
+
+      const historialActualizado = [
+        ...(cursoProgreso.historialEstados || []),
+        {
+          estado: cursoProgreso.estadoActual,
+          fecha: new Date().toISOString(),
+          motivo: `Cambio manual a ${nuevoEstado}`
+        }
+      ]
 
       return {
         ...prev,
         [cursoIndex]: {
           hitos: [false, false, false, false],
           estadoActual: nuevoEstado,
-          estadoAnterior: cursoProgreso.estadoActual
+          estadoAnterior: cursoProgreso.estadoActual,
+          historialEstados: historialActualizado
         }
       }
     })
@@ -102,14 +125,24 @@ export const useHitos = (cursos) => {
   const revertirEstado = (cursoIndex) => {
     setProgresoHitos(prev => {
       const cursoProgreso = prev[cursoIndex]
-      if (!cursoProgreso?.estadoAnterior) return prev
+      const historialEstados = cursoProgreso?.historialEstados || []
+      const historialSinActual = historialEstados.slice(0, -1)
+      const ultimoRegistro = historialEstados[historialEstados.length - 1]
+
+      if (!ultimoRegistro?.estado && !cursoProgreso?.estadoAnterior) {
+        return prev
+      }
+
+      const estadoRevertido = ultimoRegistro?.estado || cursoProgreso.estadoAnterior
+      const nuevoEstadoAnterior = historialSinActual[historialSinActual.length - 1]?.estado || null
 
       return {
         ...prev,
         [cursoIndex]: {
           hitos: [false, false, false, false],
-          estadoActual: cursoProgreso.estadoAnterior,
-          estadoAnterior: null
+          estadoActual: estadoRevertido,
+          estadoAnterior: nuevoEstadoAnterior,
+          historialEstados: historialSinActual
         }
       }
     })
