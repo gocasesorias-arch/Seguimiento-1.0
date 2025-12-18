@@ -1,12 +1,16 @@
 function App() {
   return (
-    <div style={{padding: '40px', fontFamily: 'Arial', background: '#f0f8ff'}}>
-      <h1 style={{color: 'green'}}>✅ REACT FUNCIONA!</h1>
-      <h2>Sistema de Seguimiento de Capacitaciones</h2>
-      <p style={{fontSize: '18px'}}>Si ves este mensaje, React está funcionando correctamente.</p>
-      <div style={{background: 'white', padding: '20px', borderRadius: '8px', marginTop: '20px'}}>
-        <p><strong>Versión de prueba ultra-simple</strong></p>
-        <p>Sin hooks, sin fetch, solo HTML básico renderizado por React.</p>
+    <div style={{padding: '20px', fontFamily: 'Arial'}}>
+      <h1>Sistema de Seguimiento de Capacitaciones</h1>
+      <p>Total de cursos: {cursos.length}</p>
+      <div style={{maxHeight: '400px', overflow: 'auto', border: '1px solid #ccc', padding: '10px'}}>
+        {cursos.slice(0, 10).map((curso) => (
+          <div key={curso.Column1 || curso.Column13} style={{padding: '10px', borderBottom: '1px solid #eee'}}>
+            <strong>{curso.Column13 || 'Sin nombre'}</strong>
+            <br/>
+            <small>{curso.Column10} - {curso.Column4}</small>
+          </div>
+        ))}
       </div>
     </div>
   )
