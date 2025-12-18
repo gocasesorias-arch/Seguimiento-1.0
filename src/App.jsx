@@ -73,7 +73,10 @@ function App() {
             throw new Error(`Error HTTP: ${response.status}`)
           }
 
-          const data = await response.json()
+          // Sanear textos con valores inválidos (NaN) antes de parsear JSON
+          const rawText = await response.text()
+          const sanitizedText = rawText.replace(/\bNaN\b/gi, '0')
+          const data = JSON.parse(sanitizedText)
 
           if (!Array.isArray(data) || data.length === 0) {
             throw new Error('El archivo de datos está vacío')
