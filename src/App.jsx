@@ -290,14 +290,14 @@ function App() {
               </h1>
               <div className="flex items-center gap-3 flex-wrap">
                 <p className="text-gray-600">
-                  Gestión integral de capacitaciones - OTIC CCHC - Proyecto Collahuasi <span className="font-semibold">Fase 1: Transformación KANBAN </span>
+                  Gestión integral de capacitaciones - OTIC CCHC - Proyecto Collahuasi
                 </p>
                 <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
                   apiMode
                     ? 'bg-green-100 text-green-700'
                     : 'bg-yellow-100 text-yellow-700'
                 }`}>
-                  {apiMode ? '🟢 API Backend' : '📁 JSON Local'}
+                  {apiMode ? '🟢 API Backend' : '📁 Fase 1: Transformación KANBAN'}
                 </span>
               </div>
             </div>
