@@ -56,8 +56,19 @@ function App() {
                 return esValido
               })
 
-              setCursos(cursosValidos)
-              console.log(`✅ ${cursosValidos.length} cursos cargados desde API`)
+              // Verificar duplicados por ID
+              const idsUnicos = new Set()
+              const sinDuplicados = cursosValidos.filter(curso => {
+                if (idsUnicos.has(curso.id)) {
+                  console.warn(`⚠️ Curso duplicado detectado:`, curso.id, curso.nombre)
+                  return false
+                }
+                idsUnicos.add(curso.id)
+                return true
+              })
+
+              setCursos(sinDuplicados)
+              console.log(`✅ ${sinDuplicados.length} cursos cargados desde API (${cursosValidos.length - sinDuplicados.length} duplicados removidos)`)
             } else {
               throw new Error('Formato de datos inválido desde API')
             }
@@ -118,8 +129,19 @@ function App() {
             throw new Error('No se encontraron cursos válidos en los datos')
           }
 
-          setCursos(cursosValidos)
-          console.log(`✅ ${cursosValidos.length} cursos cargados desde JSON`)
+          // Verificar duplicados por ID
+          const idsUnicos = new Set()
+          const sinDuplicados = cursosValidos.filter(curso => {
+            if (idsUnicos.has(curso.id)) {
+              console.warn(`⚠️ Curso duplicado detectado:`, curso.id, curso.nombre)
+              return false
+            }
+            idsUnicos.add(curso.id)
+            return true
+          })
+
+          setCursos(sinDuplicados)
+          console.log(`✅ ${sinDuplicados.length} cursos cargados desde JSON (${cursosValidos.length - sinDuplicados.length} duplicados removidos)`)
         }
 
         setLastUpdate(new Date())
@@ -410,7 +432,11 @@ function App() {
             ) : (
               <div className="space-y-3 max-h-[700px] overflow-y-auto pr-2">
                 {cursosFiltrados.map((curso, index) => (
-                  <TarjetaCurso key={curso.id || index} curso={curso} index={index} />
+                  <TarjetaCurso
+                    key={`${curso.id}-${curso.originalIndex}`}
+                    curso={curso}
+                    index={index}
+                  />
                 ))}
               </div>
             )}
