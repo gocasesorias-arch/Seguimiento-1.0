@@ -11,7 +11,10 @@ const __dirname = path.dirname(__filename)
 const dbPath = path.resolve(__dirname, '..', process.env.DB_PATH || './database/seguimiento.db')
 
 // Crear instancia de base de datos
-const db = new Database(dbPath, { verbose: console.log })
+// Only enable verbose logging in development mode if DEBUG_SQL is set
+const db = new Database(dbPath, {
+  verbose: process.env.DEBUG_SQL === 'true' ? console.log : undefined
+})
 
 // Configurar WAL mode para mejor performance
 db.pragma('journal_mode = WAL')
