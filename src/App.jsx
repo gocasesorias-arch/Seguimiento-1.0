@@ -167,7 +167,7 @@ function App() {
   }, [cursos, progresoHitos])
 
   const cursosFiltrados = useMemo(() => {
-    return cursosConEstado.filter(curso => {
+    const filtered = cursosConEstado.filter(curso => {
       const cumpleVP = filtros.vp === 'Todos' || compareNormalized(curso.vp || '', filtros.vp)
       const cumpleGerencia = filtros.gerencia === 'Todas' || compareNormalized(curso.gerencia || '', filtros.gerencia)
       const cumpleEstado = filtros.estado === 'Todos' || compareNormalized(curso.estadoActual || '', filtros.estado)
@@ -175,6 +175,11 @@ function App() {
       const cumpleMesInicio = filtros.mesesInicio.length === 0 || filtros.mesesInicio.includes(String(curso.mesInicio))
       return cumpleVP && cumpleGerencia && cumpleEstado && cumpleCursoSeleccionado && cumpleMesInicio
     })
+
+    console.log('🔍 Filtros aplicados:', filtros)
+    console.log('📊 Total cursos:', cursosConEstado.length, '| Filtrados:', filtered.length)
+
+    return filtered
   }, [cursosConEstado, filtros])
 
   // Estadísticas
