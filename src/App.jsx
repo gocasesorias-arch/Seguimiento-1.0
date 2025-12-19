@@ -290,7 +290,7 @@ function App() {
               </h1>
               <div className="flex items-center gap-3 flex-wrap">
                 <p className="text-gray-600">
-                  Gestión integral de capacitaciones - <span className="font-semibold">Fase 3: Backend API</span>
+                  Gestión integral de capacitaciones - OTIC CCHC - Proyecto Collahuasi <span className="font-semibold">Fase 1: Transformación KANBAN </span>
                 </p>
                 <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
                   apiMode
@@ -304,9 +304,9 @@ function App() {
 
             <div className="flex items-center gap-4">
               <div className="text-right">
-                <div className="text-sm text-gray-500">Total en sistema</div>
+                <div className="text-sm text-gray-500">Total Cursos Plan</div>
                 <div className="text-3xl font-bold text-blue-600">{cursos.length}</div>
-                <div className="text-xs text-gray-500">cursos validados</div>
+                <div className="text-xs text-gray-500">Cursos Cargados</div>
               </div>
 
               {isAuthenticated ? (
@@ -342,7 +342,7 @@ function App() {
                   : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
               }`}
             >
-              📋 Vista Listado
+              📋 Dashboard
             </button>
             <button
               onClick={() => setVistaActual('gestion')}
@@ -459,13 +459,13 @@ function App() {
         {/* Footer mejorado */}
         <div className="mt-6 bg-white rounded-lg shadow p-4 text-center text-gray-600 text-sm">
           <div className="flex items-center justify-center gap-4 flex-wrap">
-            <span>© 2024 Sistema de Seguimiento de Capacitaciones</span>
+            <span>© 2025 Sistema de Seguimiento de Capacitaciones</span>
             <span className="hidden md:inline">•</span>
             <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">
-              Fase 3: Backend API + Gestión de Hitos
+              Gestión de Hitos V2.0 
             </span>
             <span className="hidden md:inline">•</span>
-            <span>Deployado en GitHub Pages</span>
+            <span>Deployado en GitHub Pages Autor Guillermo Olivares</span>
           </div>
         </div>
       </div>
