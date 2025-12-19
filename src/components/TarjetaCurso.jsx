@@ -58,21 +58,6 @@ const TarjetaCurso = ({ curso, index }) => {
                 <span className="font-semibold">Responsable:</span> {curso.responsableOTIC}
               </div>
             )}
-            {curso.otecSugerido && (
-              <div>
-                <span className="font-semibold">OTEC:</span> {curso.otecSugerido}
-              </div>
-            )}
-            {curso.modalidad && (
-              <div>
-                <span className="font-semibold">Modalidad:</span> {curso.modalidad}
-              </div>
-            )}
-            {costoTotal > 0 && (
-              <div>
-                <span className="font-semibold">Costo total:</span> {formatearMoneda(costoTotal)}
-              </div>
-            )}
           </div>
         </div>
 
