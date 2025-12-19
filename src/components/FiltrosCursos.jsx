@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { compareNormalized, deduplicateNormalized } from '../utils/normalizers'
 
 const FiltrosCursos = ({
   filtros,
@@ -6,39 +7,37 @@ const FiltrosCursos = ({
   onLimpiarFiltros,
   cursos
 }) => {
-  // Cursos disponibles
+  // Cursos disponibles (deduplicados por normalización)
   const cursosDisponibles = useMemo(() => {
-    const nombres = new Set(cursos.map(c => c.nombre).filter(Boolean))
-    return Array.from(nombres).sort()
+    const nombres = cursos.map(c => c.nombre).filter(Boolean)
+    return deduplicateNormalized(nombres).sort()
   }, [cursos])
 
-  // VPs únicas
+  // VPs únicas (deduplicadas por normalización)
   const vpsDisponibles = useMemo(() => {
-    const vps = new Set(cursos.map(c => c.vp).filter(Boolean))
-    return ['Todos', ...Array.from(vps).sort()]
+    const vps = cursos.map(c => c.vp).filter(Boolean)
+    return ['Todos', ...deduplicateNormalized(vps).sort()]
   }, [cursos])
 
-  // Gerencias filtradas por VP seleccionado (CASCADA)
+  // Gerencias filtradas por VP seleccionado (CASCADA con comparación normalizada)
   const gerenciasDisponibles = useMemo(() => {
     let gerencias
     if (filtros.vp === 'Todos') {
-      gerencias = new Set(cursos.map(c => c.gerencia).filter(Boolean))
+      gerencias = cursos.map(c => c.gerencia).filter(Boolean)
     } else {
-      // Solo gerencias de la VP seleccionada
-      gerencias = new Set(
-        cursos
-          .filter(c => c.vp === filtros.vp)
-          .map(c => c.gerencia)
-          .filter(Boolean)
-      )
+      // Solo gerencias de la VP seleccionada (con comparación normalizada)
+      gerencias = cursos
+        .filter(c => compareNormalized(c.vp || '', filtros.vp))
+        .map(c => c.gerencia)
+        .filter(Boolean)
     }
-    return ['Todas', ...Array.from(gerencias).sort()]
+    return ['Todas', ...deduplicateNormalized(gerencias).sort()]
   }, [cursos, filtros.vp])
 
-  // Estados disponibles
+  // Estados disponibles (deduplicados por normalización)
   const estadosDisponibles = useMemo(() => {
-    const estados = new Set(cursos.map(c => c.estadoActual || c.estado).filter(Boolean))
-    return ['Todos', ...Array.from(estados).sort()]
+    const estados = cursos.map(c => c.estadoActual || c.estado).filter(Boolean)
+    return ['Todos', ...deduplicateNormalized(estados).sort()]
   }, [cursos])
 
   // Meses de inicio disponibles

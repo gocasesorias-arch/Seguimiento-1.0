@@ -7,6 +7,7 @@ import LoginForm from './components/LoginForm'
 import { cursosService } from './services/apiService'
 import { validarCurso, normalizarCurso } from './utils/cursoHelpers'
 import { useHitos } from './hooks/useHitos'
+import { compareNormalized } from './utils/normalizers'
 
 function App() {
   const { user, isAuthenticated, logout } = useAuth()
@@ -167,10 +168,10 @@ function App() {
 
   const cursosFiltrados = useMemo(() => {
     return cursosConEstado.filter(curso => {
-      const cumpleVP = filtros.vp === 'Todos' || (curso.vp || '').toUpperCase() === filtros.vp.toUpperCase()
-      const cumpleGerencia = filtros.gerencia === 'Todas' || curso.gerencia === filtros.gerencia
-      const cumpleEstado = filtros.estado === 'Todos' || curso.estadoActual === filtros.estado
-      const cumpleCursoSeleccionado = filtros.cursos.length === 0 || filtros.cursos.includes(curso.nombre)
+      const cumpleVP = filtros.vp === 'Todos' || compareNormalized(curso.vp || '', filtros.vp)
+      const cumpleGerencia = filtros.gerencia === 'Todas' || compareNormalized(curso.gerencia || '', filtros.gerencia)
+      const cumpleEstado = filtros.estado === 'Todos' || compareNormalized(curso.estadoActual || '', filtros.estado)
+      const cumpleCursoSeleccionado = filtros.cursos.length === 0 || filtros.cursos.some(nombreFiltro => compareNormalized(curso.nombre || '', nombreFiltro))
       const cumpleMesInicio = filtros.mesesInicio.length === 0 || filtros.mesesInicio.includes(String(curso.mesInicio))
       return cumpleVP && cumpleGerencia && cumpleEstado && cumpleCursoSeleccionado && cumpleMesInicio
     })
