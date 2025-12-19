@@ -7,6 +7,7 @@ import {
 } from './Icons.jsx'
 import { obtenerHitosPorEstado, obtenerColorPorEstado } from '../hooks/useHitos'
 import { formatearMoneda } from '../utils/cursoHelpers'
+import { compareNormalized } from '../utils/normalizers'
 
 const GestionHitos = ({
   cursos,
@@ -26,12 +27,12 @@ const GestionHitos = ({
     const estadoActual = progresoHitos[cursoIndex]?.estadoActual || curso.estado
 
     const cumpleVP = filtrosAplicados.vp === 'Todos' ||
-          (curso.vp || '').toUpperCase() === filtrosAplicados.vp.toUpperCase()
+          compareNormalized(curso.vp || '', filtrosAplicados.vp)
     const cumpleGerencia = filtrosAplicados.gerencia === 'Todas' ||
-                curso.gerencia === filtrosAplicados.gerencia
-    const cumpleEstado = filtrosAplicados.estado === 'Todos' || estadoActual === filtrosAplicados.estado
+                compareNormalized(curso.gerencia || '', filtrosAplicados.gerencia)
+    const cumpleEstado = filtrosAplicados.estado === 'Todos' || compareNormalized(estadoActual || '', filtrosAplicados.estado)
     const cumpleCursoSeleccionado = filtrosAplicados.cursos.length === 0 ||
-      filtrosAplicados.cursos.includes(curso.nombre)
+      filtrosAplicados.cursos.some(nombreFiltro => compareNormalized(curso.nombre || '', nombreFiltro))
     const cumpleMesInicio = filtrosAplicados.mesesInicio.length === 0 ||
       filtrosAplicados.mesesInicio.includes(String(curso.mesInicio))
 
