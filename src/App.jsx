@@ -78,12 +78,25 @@ function App() {
           const sanitizedText = rawText.replace(/\bNaN\b/gi, '0')
           const data = JSON.parse(sanitizedText)
 
-          if (!Array.isArray(data) || data.length === 0) {
+          // Handle both old array format and new object format with metadata
+          let cursosData = data
+          if (!Array.isArray(data)) {
+            // New format: { metadata: {...}, cursos: [...] }
+            if (data.cursos && Array.isArray(data.cursos)) {
+              cursosData = data.cursos
+            } else {
+              throw new Error('Formato de datos JSON inválido')
+            }
+          }
+
+          if (cursosData.length === 0) {
             throw new Error('El archivo de datos está vacío')
           }
 
           // Normalizar desde JSON (incluye normalización de VP a mayúsculas)
-          const cursosNormalizados = data.slice(1).map(cursoRaw => {
+          // Skip first row if it's a header (old format)
+          const startIndex = Array.isArray(data) ? 1 : 0
+          const cursosNormalizados = cursosData.slice(startIndex).map(cursoRaw => {
             try {
               return normalizarCurso(cursoRaw)
             } catch (err) {
