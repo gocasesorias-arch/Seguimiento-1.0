@@ -198,9 +198,6 @@ function App() {
       return cumpleVP && cumpleGerencia && cumpleEstado && cumpleCursoSeleccionado && cumpleMesInicio
     })
 
-    console.log('🔍 Filtros aplicados:', filtros)
-    console.log('📊 Total cursos:', cursosConEstado.length, '| Filtrados:', filtered.length)
-
     return filtered
   }, [cursosConEstado, filtros])
 
