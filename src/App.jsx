@@ -249,11 +249,11 @@ function App() {
   // Estado de carga
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-700 font-semibold text-lg">Cargando y validando datos...</p>
-          <p className="text-gray-500 text-sm mt-2">Normalizando estructura de cursos</p>
+          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-emerald-600 mx-auto mb-4"></div>
+          <p className="text-slate-700 font-semibold text-lg">Cargando y validando datos...</p>
+          <p className="text-slate-500 text-sm mt-2">Normalizando estructura de cursos</p>
         </div>
       </div>
     )
@@ -262,14 +262,14 @@ function App() {
   // Estado de error
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-red-50 to-red-100 flex items-center justify-center p-6">
-        <div className="bg-white rounded-xl shadow-lg p-8 max-w-md">
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
+        <div className="bg-white rounded-2xl shadow-lg p-8 max-w-md border border-red-100">
           <div className="text-red-600 text-5xl mb-4">⚠️</div>
           <h2 className="text-2xl font-bold text-red-600 mb-4">Error al Cargar Datos</h2>
-          <p className="text-gray-700 mb-4">{error}</p>
+          <p className="text-slate-700 mb-4">{error}</p>
           <button
             onClick={() => window.location.reload()}
-            className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-semibold w-full"
+            className="px-6 py-3 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors font-semibold w-full"
           >
             🔄 Reintentar
           </button>
@@ -279,44 +279,60 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 md:p-6">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-slate-50 p-4 md:p-8">
+      <div className="max-w-7xl mx-auto space-y-8">
         {/* Header */}
-        <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-          <div className="flex items-center justify-between flex-wrap gap-4">
-            <div className="flex-1">
-              <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2">
-                📊 Sistema de Seguimiento de Capacitaciones
-              </h1>
-              <div className="flex items-center gap-3 flex-wrap">
-                <p className="text-gray-600">
-                  Gestión integral de capacitaciones - OTIC CCHC - Proyecto Collahuasi
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+          <div className="flex items-center justify-between flex-wrap gap-4 border-b border-slate-200 pb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-full bg-teal-600 text-white flex items-center justify-center text-lg">
+                🎓
+              </div>
+              <div>
+                <h1 className="text-2xl md:text-3xl font-bold text-slate-800">
+                  Sistema de Gestión de Capacitaciones
+                </h1>
+                <p className="text-sm text-slate-500">
+                  Seguimiento y control de cursos empresariales
                 </p>
-                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                  apiMode
-                    ? 'bg-green-100 text-green-700'
-                    : 'bg-yellow-100 text-yellow-700'
-                }`}>
-                  {apiMode ? '🟢 API Backend' : '📁 Fase 1: Transformación KANBAN'}
-                </span>
               </div>
             </div>
 
-            <div className="flex items-center gap-4">
-              <div className="text-right">
-                <div className="text-sm text-gray-500">Total Cursos Plan</div>
-                <div className="text-3xl font-bold text-blue-600">{cursos.length}</div>
-                <div className="text-xs text-gray-500">Cursos Cargados</div>
-              </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${
+                apiMode
+                  ? 'bg-teal-50 text-teal-700 border-teal-200'
+                  : 'bg-amber-50 text-amber-700 border-amber-200'
+              }`}>
+                {apiMode ? '🟢 Conectado a API' : '📁 Fase 1: Transformación KANBAN'}
+              </span>
+              <span className="px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 border border-slate-200">
+                {cursos.length} cursos
+              </span>
+              <button
+                type="button"
+                onClick={() => window.location.reload()}
+                className="px-4 py-1 rounded-full text-xs font-semibold bg-teal-600 text-white hover:bg-teal-700 transition-colors"
+              >
+                🔄 Recargar
+              </button>
+            </div>
+          </div>
 
+          <div className="flex items-center justify-between flex-wrap gap-4 pt-4">
+            <div className="text-sm text-slate-600">
+              Gestión integral de capacitaciones - OTIC CCHC - Proyecto Collahuasi
+            </div>
+
+            <div className="flex items-center gap-3">
               {isAuthenticated ? (
                 <div className="flex flex-col items-end gap-2">
-                  <div className="text-sm text-gray-600">
+                  <div className="text-sm text-slate-600">
                     Hola, <span className="font-semibold">{user?.nombre}</span>
                   </div>
                   <button
                     onClick={logout}
-                    className="px-4 py-2 bg-red-500 text-white text-sm rounded-lg hover:bg-red-600 transition-colors font-semibold"
+                    className="px-4 py-2 bg-rose-500 text-white text-sm rounded-xl hover:bg-rose-600 transition-colors font-semibold"
                   >
                     Cerrar Sesión
                   </button>
@@ -324,7 +340,7 @@ function App() {
               ) : (
                 <button
                   onClick={() => setShowLogin(true)}
-                  className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors font-semibold"
+                  className="px-4 py-2 bg-teal-600 text-white text-sm rounded-xl hover:bg-teal-700 transition-colors font-semibold"
                 >
                   Iniciar Sesión
                 </button>
@@ -333,23 +349,23 @@ function App() {
           </div>
 
           {/* Toggle de vistas */}
-          <div className="mt-4 flex gap-2">
+          <div className="mt-4 flex flex-wrap gap-2">
             <button
               onClick={() => setVistaActual('listado')}
-              className={`px-6 py-2 rounded-lg font-semibold transition-colors ${
+              className={`px-6 py-2 rounded-xl font-semibold transition-colors border ${
                 vistaActual === 'listado'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  ? 'bg-teal-600 text-white border-teal-600 shadow-sm'
+                  : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200'
               }`}
             >
               📋 Dashboard
             </button>
             <button
               onClick={() => setVistaActual('gestion')}
-              className={`px-6 py-2 rounded-lg font-semibold transition-colors ${
+              className={`px-6 py-2 rounded-xl font-semibold transition-colors border ${
                 vistaActual === 'gestion'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  ? 'bg-teal-600 text-white border-teal-600 shadow-sm'
+                  : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200'
               }`}
             >
               ✅ Gestión de Hitos
@@ -361,70 +377,118 @@ function App() {
         {showLogin && <LoginForm onClose={() => setShowLogin(false)} />}
 
         {/* Estadísticas Mejoradas */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-4 mb-2">
-          <div className="bg-white rounded-lg shadow p-4">
-            <div className="text-2xl font-bold text-blue-600">{estadisticas.total}</div>
-            <div className="text-xs text-gray-600">Filtrados</div>
+        <div>
+          <div className="flex items-end justify-between flex-wrap gap-2 mb-3">
+            <div>
+              <h2 className="text-lg font-semibold text-slate-800">Dashboard de estadísticas</h2>
+              <p className="text-sm text-slate-500">Resumen general del estado de las capacitaciones</p>
+            </div>
+            <span className="text-xs text-slate-400">Actualizado en tiempo real</span>
           </div>
-          <div className="bg-white rounded-lg shadow p-4">
-            <div className="text-2xl font-bold text-green-600">{estadisticas.realizados}</div>
-            <div className="text-xs text-gray-600">Realizados</div>
-          </div>
-          <div className="bg-white rounded-lg shadow p-4">
-            <div className="text-2xl font-bold text-blue-600">{estadisticas.enEjecucion}</div>
-            <div className="text-xs text-gray-600">En Ejecución</div>
-          </div>
-          <div className="bg-white rounded-lg shadow p-4">
-            <div className="text-2xl font-bold text-indigo-600">{estadisticas.enProceso}</div>
-            <div className="text-xs text-gray-600">En Proceso</div>
-          </div>
-          <div className="bg-white rounded-lg shadow p-4">
-            <div className="text-2xl font-bold text-yellow-600">{estadisticas.programado}</div>
-            <div className="text-xs text-gray-600">Programado</div>
-          </div>
-          <div className="bg-white rounded-lg shadow p-4">
-            <div className="text-2xl font-bold text-cyan-600">{estadisticas.planificado}</div>
-            <div className="text-xs text-gray-600">Planificado</div>
-          </div>
-          <div className="bg-white rounded-lg shadow p-4">
-            <div className="text-2xl font-bold text-slate-700">{estadisticas.pendiente}</div>
-            <div className="text-xs text-gray-600">Pendiente</div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-4">
+            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 border-t-4 border-teal-500">
+              <div className="flex items-center justify-between">
+                <div className="w-8 h-8 rounded-lg bg-teal-50 text-teal-700 flex items-center justify-center text-sm">📌</div>
+                <span className="text-xs text-slate-400">Total</span>
+              </div>
+              <div className="text-2xl font-bold text-teal-600 mt-3">{estadisticas.total}</div>
+              <div className="text-xs text-slate-500">Filtrados</div>
+            </div>
+            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 border-t-4 border-emerald-500">
+              <div className="flex items-center justify-between">
+                <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center text-sm">✅</div>
+                <span className="text-xs text-slate-400">OK</span>
+              </div>
+              <div className="text-2xl font-bold text-emerald-600 mt-3">{estadisticas.realizados}</div>
+              <div className="text-xs text-slate-500">Realizados</div>
+            </div>
+            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 border-t-4 border-sky-500">
+              <div className="flex items-center justify-between">
+                <div className="w-8 h-8 rounded-lg bg-sky-50 text-sky-700 flex items-center justify-center text-sm">⚙️</div>
+                <span className="text-xs text-slate-400">En curso</span>
+              </div>
+              <div className="text-2xl font-bold text-sky-600 mt-3">{estadisticas.enEjecucion}</div>
+              <div className="text-xs text-slate-500">En Ejecución</div>
+            </div>
+            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 border-t-4 border-indigo-500">
+              <div className="flex items-center justify-between">
+                <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-700 flex items-center justify-center text-sm">🕒</div>
+                <span className="text-xs text-slate-400">Proceso</span>
+              </div>
+              <div className="text-2xl font-bold text-indigo-600 mt-3">{estadisticas.enProceso}</div>
+              <div className="text-xs text-slate-500">En Proceso</div>
+            </div>
+            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 border-t-4 border-amber-500">
+              <div className="flex items-center justify-between">
+                <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-700 flex items-center justify-center text-sm">🗓️</div>
+                <span className="text-xs text-slate-400">Agenda</span>
+              </div>
+              <div className="text-2xl font-bold text-amber-600 mt-3">{estadisticas.programado}</div>
+              <div className="text-xs text-slate-500">Programado</div>
+            </div>
+            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 border-t-4 border-cyan-500">
+              <div className="flex items-center justify-between">
+                <div className="w-8 h-8 rounded-lg bg-cyan-50 text-cyan-700 flex items-center justify-center text-sm">🧭</div>
+                <span className="text-xs text-slate-400">Plan</span>
+              </div>
+              <div className="text-2xl font-bold text-cyan-600 mt-3">{estadisticas.planificado}</div>
+              <div className="text-xs text-slate-500">Planificado</div>
+            </div>
+            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 border-t-4 border-slate-500">
+              <div className="flex items-center justify-between">
+                <div className="w-8 h-8 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center text-sm">⏳</div>
+                <span className="text-xs text-slate-400">Pendiente</span>
+              </div>
+              <div className="text-2xl font-bold text-slate-700 mt-3">{estadisticas.pendiente}</div>
+              <div className="text-xs text-slate-500">Pendiente</div>
+            </div>
           </div>
         </div>
-        <div className="text-sm text-gray-600 mb-6 flex items-center gap-2">
-          <span className="inline-flex items-center px-2 py-1 bg-slate-100 text-slate-700 rounded-lg border border-slate-200 font-semibold">
+        <div className="text-sm text-slate-600 flex items-center gap-2">
+          <span className="inline-flex items-center px-3 py-1 bg-white text-slate-600 rounded-full border border-slate-200 font-semibold shadow-sm">
             Fecha última actualización: {lastUpdate.toLocaleString()}
           </span>
         </div>
 
-        {/* Filtros con cascada */}
-        <FiltrosCursos
-          filtros={filtros}
-          onFiltroChange={handleFiltroChange}
-          onLimpiarFiltros={handleLimpiarFiltros}
-          cursos={cursosConEstado}
-        />
+        {/* Sección de listado */}
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+          <div className="flex items-center justify-between flex-wrap gap-3 mb-4">
+            <div>
+              <h2 className="text-lg font-semibold text-slate-800">Listado de Cursos</h2>
+              <p className="text-sm text-slate-500">Gestiona y da seguimiento a todas las capacitaciones</p>
+            </div>
+            <span className="px-3 py-1 rounded-full text-xs font-semibold bg-teal-50 text-teal-700 border border-teal-200">
+              {cursosFiltrados.length} resultados
+            </span>
+          </div>
+
+          {/* Filtros con cascada */}
+          <FiltrosCursos
+            filtros={filtros}
+            onFiltroChange={handleFiltroChange}
+            onLimpiarFiltros={handleLimpiarFiltros}
+            cursos={cursosConEstado}
+          />
+        </div>
 
         {/* Vista Listado */}
         {vistaActual === 'listado' && (
-          <div className="bg-white rounded-xl shadow-lg p-6">
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-gray-800">
-                📚 Cursos
-              </h2>
-              <span className="px-4 py-2 bg-blue-100 text-blue-800 rounded-lg font-semibold">
-                {cursosFiltrados.length} resultados
+              <h2 className="text-xl font-bold text-slate-800">📚 Cursos</h2>
+              <span className="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-xs font-semibold border border-slate-200">
+                Listado actualizado
               </span>
             </div>
 
             {cursosFiltrados.length === 0 ? (
-              <div className="text-center py-12 text-gray-500">
+              <div className="text-center py-12 text-slate-500">
                 <div className="text-6xl mb-4">📭</div>
                 <p className="text-lg font-semibold mb-2">No hay cursos que cumplan los filtros</p>
                 <p className="text-sm">Intenta ajustar o limpiar los filtros</p>
                 <button
                   onClick={handleLimpiarFiltros}
-                  className="mt-4 px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-semibold"
+                  className="mt-4 px-6 py-2 bg-teal-600 text-white rounded-xl hover:bg-teal-700 transition-colors font-semibold"
                 >
                   🗑️ Limpiar Filtros
                 </button>
@@ -457,11 +521,11 @@ function App() {
         )}
 
         {/* Footer mejorado */}
-        <div className="mt-6 bg-white rounded-lg shadow p-4 text-center text-gray-600 text-sm">
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 text-center text-slate-600 text-sm">
           <div className="flex items-center justify-center gap-4 flex-wrap">
             <span>© 2025 Sistema de Seguimiento de Capacitaciones</span>
             <span className="hidden md:inline">•</span>
-            <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">
+            <span className="px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full text-xs font-semibold border border-emerald-200">
               Gestión de Hitos V2.0 
             </span>
             <span className="hidden md:inline">•</span>
