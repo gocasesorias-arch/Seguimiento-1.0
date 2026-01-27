@@ -304,7 +304,7 @@ function App() {
                     ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                     : 'bg-amber-50 text-amber-700 border-amber-200'
                 }`}>
-                  {apiMode ? '🟢 Conectado a API' : '📁 Fase 1: Transformación KANBAN'}
+                  {apiMode ? '🟢 Conectado a API' : '📁 Fase 1: Creacion Seguimiento Hitos'}
                 </span>
                 <span className="px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 border border-slate-200">
                   {cursos.length} cursos cargados
