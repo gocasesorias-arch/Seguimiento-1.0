@@ -101,7 +101,7 @@ const FiltrosCursos = ({
   )
 
   return (
-    <div className="bg-slate-50 rounded-2xl border border-slate-200 p-6">
+    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <span className="text-2xl">🔍</span>

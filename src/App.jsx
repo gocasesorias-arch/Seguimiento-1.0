@@ -280,48 +280,36 @@ function App() {
 
   return (
     <div className="min-h-screen bg-slate-50 p-4 md:p-8">
-      <div className="max-w-7xl mx-auto space-y-8">
+      <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-          <div className="flex items-center justify-between flex-wrap gap-4 border-b border-slate-200 pb-4">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-teal-600 text-white flex items-center justify-center text-lg">
-                🎓
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            <div className="flex-1 space-y-2">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-lg">
+                  📊
+                </div>
+                <div>
+                  <h1 className="text-3xl md:text-4xl font-bold text-slate-800">
+                    Sistema de Seguimiento de Capacitaciones
+                  </h1>
+                  <p className="text-sm text-slate-500">
+                    Gestión integral de capacitaciones - OTIC CCHC - Proyecto Collahuasi
+                  </p>
+                </div>
               </div>
-              <div>
-                <h1 className="text-2xl md:text-3xl font-bold text-slate-800">
-                  Sistema de Gestión de Capacitaciones
-                </h1>
-                <p className="text-sm text-slate-500">
-                  Seguimiento y control de cursos empresariales
-                </p>
+              <div className="flex items-center gap-3 flex-wrap">
+                <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${
+                  apiMode
+                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                    : 'bg-amber-50 text-amber-700 border-amber-200'
+                }`}>
+                  {apiMode ? '🟢 Conectado a API' : '📁 Fase 1: Transformación KANBAN'}
+                </span>
+                <span className="px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 border border-slate-200">
+                  {cursos.length} cursos cargados
+                </span>
               </div>
-            </div>
-
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${
-                apiMode
-                  ? 'bg-teal-50 text-teal-700 border-teal-200'
-                  : 'bg-amber-50 text-amber-700 border-amber-200'
-              }`}>
-                {apiMode ? '🟢 Conectado a API' : '📁 Fase 1: Transformación KANBAN'}
-              </span>
-              <span className="px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 border border-slate-200">
-                {cursos.length} cursos
-              </span>
-              <button
-                type="button"
-                onClick={() => window.location.reload()}
-                className="px-4 py-1 rounded-full text-xs font-semibold bg-teal-600 text-white hover:bg-teal-700 transition-colors"
-              >
-                🔄 Recargar
-              </button>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between flex-wrap gap-4 pt-4">
-            <div className="text-sm text-slate-600">
-              Gestión integral de capacitaciones - OTIC CCHC - Proyecto Collahuasi
             </div>
 
             <div className="flex items-center gap-3">
@@ -340,7 +328,7 @@ function App() {
               ) : (
                 <button
                   onClick={() => setShowLogin(true)}
-                  className="px-4 py-2 bg-teal-600 text-white text-sm rounded-xl hover:bg-teal-700 transition-colors font-semibold"
+                  className="px-4 py-2 bg-emerald-600 text-white text-sm rounded-xl hover:bg-emerald-700 transition-colors font-semibold"
                 >
                   Iniciar Sesión
                 </button>
@@ -349,12 +337,12 @@ function App() {
           </div>
 
           {/* Toggle de vistas */}
-          <div className="mt-4 flex flex-wrap gap-2">
+          <div className="mt-6 flex flex-wrap gap-2">
             <button
               onClick={() => setVistaActual('listado')}
               className={`px-6 py-2 rounded-xl font-semibold transition-colors border ${
                 vistaActual === 'listado'
-                  ? 'bg-teal-600 text-white border-teal-600 shadow-sm'
+                  ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
                   : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200'
               }`}
             >
@@ -364,7 +352,7 @@ function App() {
               onClick={() => setVistaActual('gestion')}
               className={`px-6 py-2 rounded-xl font-semibold transition-colors border ${
                 vistaActual === 'gestion'
-                  ? 'bg-teal-600 text-white border-teal-600 shadow-sm'
+                  ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
                   : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200'
               }`}
             >
@@ -378,68 +366,34 @@ function App() {
 
         {/* Estadísticas Mejoradas */}
         <div>
-          <div className="flex items-end justify-between flex-wrap gap-2 mb-3">
-            <div>
-              <h2 className="text-lg font-semibold text-slate-800">Dashboard de estadísticas</h2>
-              <p className="text-sm text-slate-500">Resumen general del estado de las capacitaciones</p>
-            </div>
-            <span className="text-xs text-slate-400">Actualizado en tiempo real</span>
-          </div>
+          <h2 className="text-lg font-semibold text-slate-800 mb-3">Dashboard de estadísticas</h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-4">
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 border-t-4 border-teal-500">
-              <div className="flex items-center justify-between">
-                <div className="w-8 h-8 rounded-lg bg-teal-50 text-teal-700 flex items-center justify-center text-sm">📌</div>
-                <span className="text-xs text-slate-400">Total</span>
-              </div>
-              <div className="text-2xl font-bold text-teal-600 mt-3">{estadisticas.total}</div>
+            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 border-t-4 border-emerald-500">
+              <div className="text-2xl font-bold text-emerald-600">{estadisticas.total}</div>
               <div className="text-xs text-slate-500">Filtrados</div>
             </div>
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 border-t-4 border-emerald-500">
-              <div className="flex items-center justify-between">
-                <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center text-sm">✅</div>
-                <span className="text-xs text-slate-400">OK</span>
-              </div>
-              <div className="text-2xl font-bold text-emerald-600 mt-3">{estadisticas.realizados}</div>
+            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 border-t-4 border-green-500">
+              <div className="text-2xl font-bold text-green-600">{estadisticas.realizados}</div>
               <div className="text-xs text-slate-500">Realizados</div>
             </div>
             <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 border-t-4 border-sky-500">
-              <div className="flex items-center justify-between">
-                <div className="w-8 h-8 rounded-lg bg-sky-50 text-sky-700 flex items-center justify-center text-sm">⚙️</div>
-                <span className="text-xs text-slate-400">En curso</span>
-              </div>
-              <div className="text-2xl font-bold text-sky-600 mt-3">{estadisticas.enEjecucion}</div>
+              <div className="text-2xl font-bold text-sky-600">{estadisticas.enEjecucion}</div>
               <div className="text-xs text-slate-500">En Ejecución</div>
             </div>
             <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 border-t-4 border-indigo-500">
-              <div className="flex items-center justify-between">
-                <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-700 flex items-center justify-center text-sm">🕒</div>
-                <span className="text-xs text-slate-400">Proceso</span>
-              </div>
-              <div className="text-2xl font-bold text-indigo-600 mt-3">{estadisticas.enProceso}</div>
+              <div className="text-2xl font-bold text-indigo-600">{estadisticas.enProceso}</div>
               <div className="text-xs text-slate-500">En Proceso</div>
             </div>
             <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 border-t-4 border-amber-500">
-              <div className="flex items-center justify-between">
-                <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-700 flex items-center justify-center text-sm">🗓️</div>
-                <span className="text-xs text-slate-400">Agenda</span>
-              </div>
-              <div className="text-2xl font-bold text-amber-600 mt-3">{estadisticas.programado}</div>
+              <div className="text-2xl font-bold text-amber-600">{estadisticas.programado}</div>
               <div className="text-xs text-slate-500">Programado</div>
             </div>
             <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 border-t-4 border-cyan-500">
-              <div className="flex items-center justify-between">
-                <div className="w-8 h-8 rounded-lg bg-cyan-50 text-cyan-700 flex items-center justify-center text-sm">🧭</div>
-                <span className="text-xs text-slate-400">Plan</span>
-              </div>
-              <div className="text-2xl font-bold text-cyan-600 mt-3">{estadisticas.planificado}</div>
+              <div className="text-2xl font-bold text-cyan-600">{estadisticas.planificado}</div>
               <div className="text-xs text-slate-500">Planificado</div>
             </div>
             <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 border-t-4 border-slate-500">
-              <div className="flex items-center justify-between">
-                <div className="w-8 h-8 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center text-sm">⏳</div>
-                <span className="text-xs text-slate-400">Pendiente</span>
-              </div>
-              <div className="text-2xl font-bold text-slate-700 mt-3">{estadisticas.pendiente}</div>
+              <div className="text-2xl font-bold text-slate-700">{estadisticas.pendiente}</div>
               <div className="text-xs text-slate-500">Pendiente</div>
             </div>
           </div>
@@ -473,28 +427,33 @@ function App() {
 
         {/* Vista Listado */}
         {vistaActual === 'listado' && (
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-slate-800">📚 Cursos</h2>
-              <span className="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-xs font-semibold border border-slate-200">
-                Listado actualizado
-              </span>
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-xl font-bold text-slate-800">
+              📚 Cursos
+              </h2>
+              <p className="text-sm text-slate-500">Gestiona y da seguimiento a todas las capacitaciones</p>
             </div>
+            <span className="px-4 py-2 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full font-semibold text-sm">
+              {cursosFiltrados.length} resultados
+            </span>
+          </div>
 
-            {cursosFiltrados.length === 0 ? (
-              <div className="text-center py-12 text-slate-500">
-                <div className="text-6xl mb-4">📭</div>
-                <p className="text-lg font-semibold mb-2">No hay cursos que cumplan los filtros</p>
-                <p className="text-sm">Intenta ajustar o limpiar los filtros</p>
-                <button
-                  onClick={handleLimpiarFiltros}
-                  className="mt-4 px-6 py-2 bg-teal-600 text-white rounded-xl hover:bg-teal-700 transition-colors font-semibold"
-                >
-                  🗑️ Limpiar Filtros
-                </button>
-              </div>
-            ) : (
-              <div className="space-y-3 max-h-[700px] overflow-y-auto pr-2">
+          {cursosFiltrados.length === 0 ? (
+            <div className="text-center py-12 text-slate-500">
+              <div className="text-6xl mb-4">📭</div>
+              <p className="text-lg font-semibold mb-2">No hay cursos que cumplan los filtros</p>
+              <p className="text-sm">Intenta ajustar o limpiar los filtros</p>
+              <button
+                onClick={handleLimpiarFiltros}
+                className="mt-4 px-6 py-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors font-semibold"
+              >
+                🗑️ Limpiar Filtros
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-3 max-h-[700px] overflow-y-auto pr-2">
                 {cursosFiltrados.map((curso, index) => (
                   <TarjetaCurso
                     key={`${curso.id}-${curso.originalIndex}`}
