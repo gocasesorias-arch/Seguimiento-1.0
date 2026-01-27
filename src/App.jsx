@@ -404,13 +404,26 @@ function App() {
           </span>
         </div>
 
-        {/* Filtros con cascada */}
-        <FiltrosCursos
-          filtros={filtros}
-          onFiltroChange={handleFiltroChange}
-          onLimpiarFiltros={handleLimpiarFiltros}
-          cursos={cursosConEstado}
-        />
+        {/* Sección de listado */}
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+          <div className="flex items-center justify-between flex-wrap gap-3 mb-4">
+            <div>
+              <h2 className="text-lg font-semibold text-slate-800">Listado de Cursos</h2>
+              <p className="text-sm text-slate-500">Gestiona y da seguimiento a todas las capacitaciones</p>
+            </div>
+            <span className="px-3 py-1 rounded-full text-xs font-semibold bg-teal-50 text-teal-700 border border-teal-200">
+              {cursosFiltrados.length} resultados
+            </span>
+          </div>
+
+          {/* Filtros con cascada */}
+          <FiltrosCursos
+            filtros={filtros}
+            onFiltroChange={handleFiltroChange}
+            onLimpiarFiltros={handleLimpiarFiltros}
+            cursos={cursosConEstado}
+          />
+        </div>
 
         {/* Vista Listado */}
         {vistaActual === 'listado' && (
