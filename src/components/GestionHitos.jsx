@@ -267,24 +267,31 @@ const GestionHitos = ({
                       <div className="flex flex-wrap gap-3 pt-4 border-t border-slate-200">
                         <button
                           onClick={() => onCambiarEstadoEspecial(cursoOriginalIndex, 'Suspendido')}
-                          className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-rose-50 text-rose-700 border border-rose-200 rounded-xl font-semibold hover:bg-rose-100 transition-all"
+                          className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-red-50 text-red-700 border border-red-200 rounded-xl font-semibold hover:bg-red-100 transition-all"
                         >
                           <XCircle size={20} />
-                          Suspender Curso
+                          Suspender
                         </button>
                         <button
                           onClick={() => onCambiarEstadoEspecial(cursoOriginalIndex, 'Postergado')}
-                          className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-amber-50 text-amber-700 border border-amber-200 rounded-xl font-semibold hover:bg-amber-100 transition-all"
+                          className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-purple-50 text-purple-700 border border-purple-200 rounded-xl font-semibold hover:bg-purple-100 transition-all"
                         >
                           <Clock size={20} />
-                          Postergar Curso
+                          Postergar
+                        </button>
+                        <button
+                          onClick={() => onCambiarEstadoEspecial(cursoOriginalIndex, 'Cancelado')}
+                          className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-rose-50 text-rose-700 border border-rose-200 rounded-xl font-semibold hover:bg-rose-100 transition-all"
+                        >
+                          <XCircle size={20} />
+                          Cancelar
                         </button>
                         {(progreso.estadoAnterior || (progreso.historialEstados?.length || 0) > 0) && (
                           <button
                             onClick={() => onRevertirEstado(cursoOriginalIndex)}
                             className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl font-semibold hover:bg-emerald-100 transition-all"
                           >
-                            Deshacer cambio de estado
+                            Deshacer cambio
                           </button>
                         )}
                       </div>
