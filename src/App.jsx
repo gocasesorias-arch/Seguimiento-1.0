@@ -208,12 +208,16 @@ function App() {
   const estadisticas = useMemo(() => {
     return {
       total: cursosFiltrados.length,
-      realizados: cursosFiltrados.filter(c => c.estadoActual === 'Realizado').length,
-      enEjecucion: cursosFiltrados.filter(c => c.estadoActual === 'En Ejecución').length,
+      pendiente: cursosFiltrados.filter(c => c.estadoActual === 'Pendiente').length,
+      planificado: cursosFiltrados.filter(c => c.estadoActual === 'Planificado' || c.estadoActual === 'Planificación').length,
       enProceso: cursosFiltrados.filter(c => c.estadoActual === 'En Proceso').length,
       programado: cursosFiltrados.filter(c => c.estadoActual === 'Programado').length,
-      planificado: cursosFiltrados.filter(c => c.estadoActual === 'Planificado' || c.estadoActual === 'Planificación').length,
-      pendiente: cursosFiltrados.filter(c => c.estadoActual === 'Pendiente').length
+      enEjecucion: cursosFiltrados.filter(c => c.estadoActual === 'En Ejecución').length,
+      realizados: cursosFiltrados.filter(c => c.estadoActual === 'Realizado').length,
+      cierre: cursosFiltrados.filter(c => c.estadoActual === 'Cierre').length,
+      suspendido: cursosFiltrados.filter(c => c.estadoActual === 'Suspendido').length,
+      postergado: cursosFiltrados.filter(c => c.estadoActual === 'Postergado').length,
+      cancelado: cursosFiltrados.filter(c => c.estadoActual === 'Cancelado').length
     }
   }, [cursosFiltrados])
 

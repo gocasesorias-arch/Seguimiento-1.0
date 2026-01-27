@@ -53,7 +53,7 @@ export const useHitos = (cursos) => {
 
       if (todosCompletados) {
         const estadoActual = cursoProgreso.estadoActual
-        const flujoEstados = ['Pendiente', 'Planificado', 'En Proceso', 'Programado', 'En Ejecución', 'Realizado']
+        const flujoEstados = ['Pendiente', 'Planificado', 'En Proceso', 'Programado', 'En Ejecución', 'Realizado', 'Cierre']
         const indexActual = flujoEstados.indexOf(estadoActual)
 
         if (indexActual >= 0 && indexActual < flujoEstados.length - 1) {
@@ -203,6 +203,18 @@ export const obtenerHitosPorEstado = (estado) => {
       'Definir nueva fecha tentativa',
       'Notificar a involucrados',
       'Mantener recursos reservados'
+    ],
+    'Cierre': [
+      'Evaluar impacto del proceso formativo',
+      'Consolidar documentación final',
+      'Cerrar expediente del curso',
+      'Archivar registros y certificados'
+    ],
+    'Cancelado': [
+      'Documentar motivo de cancelación',
+      'Notificar a participantes y proveedores',
+      'Gestionar devoluciones si aplica',
+      'Cerrar expediente sin ejecución'
     ]
   }
 
@@ -226,7 +238,9 @@ export const obtenerColorPorEstado = (estado) => {
     'En Ejecución': 'bg-orange-100 text-orange-700 border-orange-300',
     'Realizado': 'bg-green-100 text-green-700 border-green-300',
     'Suspendido': 'bg-red-100 text-red-700 border-red-300',
-    'Postergado': 'bg-purple-100 text-purple-700 border-purple-300'
+    'Postergado': 'bg-purple-100 text-purple-700 border-purple-300',
+    'Cierre': 'bg-teal-100 text-teal-700 border-teal-300',
+    'Cancelado': 'bg-rose-100 text-rose-700 border-rose-300'
   }
 
   return colores[estado] || 'bg-gray-100 text-gray-700 border-gray-300'
@@ -319,6 +333,20 @@ export const hitos = [
       'Encuestas satisfacción',
       'Informe de cierre'
     ]
+  },
+  {
+    id: 7,
+    nombre: 'Cierre',
+    estado: 'Cierre',
+    icon: CheckCircle,
+    color: 'bg-teal-100 border-teal-400 text-teal-700',
+    descripcion: 'Actividad cerrada y archivada',
+    subHitos: [
+      'Evaluar impacto formativo',
+      'Consolidar documentación',
+      'Cerrar expediente',
+      'Archivar registros'
+    ]
   }
 ]
 
@@ -331,13 +359,20 @@ export const estadosEspeciales = [
     estado: 'Suspendido',
     icon: XCircle,
     color: 'bg-red-100 border-red-400 text-red-700',
-    descripcion: 'Curso suspendido temporalmente'
+    descripcion: 'Curso suspendido hasta nuevo aviso'
   },
   {
     nombre: 'Postergado',
     estado: 'Postergado',
     icon: Clock,
     color: 'bg-purple-100 border-purple-400 text-purple-700',
-    descripcion: 'Curso reprogramado para otra fecha'
+    descripcion: 'Actividad postergada para el siguiente año'
+  },
+  {
+    nombre: 'Cancelado',
+    estado: 'Cancelado',
+    icon: XCircle,
+    color: 'bg-rose-100 border-rose-400 text-rose-700',
+    descripcion: 'Actividad cancelada sin ejecutarse'
   }
 ]
