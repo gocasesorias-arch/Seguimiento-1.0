@@ -28,7 +28,7 @@ function App() {
   })
 
   // Hook de gestión de hitos
-  const { progresoHitos, toggleHito, cambiarEstadoEspecial, revertirEstado } = useHitos(cursos)
+  const { progresoHitos, toggleHito, cambiarEstadoEspecial, revertirEstado, programarCurso } = useHitos(cursos)
 
   // Cargar datos desde API o JSON
   useEffect(() => {
@@ -245,6 +245,11 @@ function App() {
 
   const handleRevertirEstado = (cursoIndex) => {
     revertirEstado(cursoIndex)
+    setLastUpdate(new Date())
+  }
+
+  const handleProgramarCurso = (cursoIndex, programacion) => {
+    programarCurso(cursoIndex, programacion)
     setLastUpdate(new Date())
   }
 
@@ -488,6 +493,7 @@ function App() {
             onToggleHito={handleToggleHito}
             onCambiarEstadoEspecial={handleCambiarEstadoEspecial}
             onRevertirEstado={handleRevertirEstado}
+            onProgramarCurso={handleProgramarCurso}
             filtrosAplicados={filtros}
             lastUpdate={lastUpdate}
           />

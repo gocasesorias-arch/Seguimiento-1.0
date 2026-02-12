@@ -9,16 +9,137 @@ import { obtenerHitosPorEstado, obtenerColorPorEstado } from '../hooks/useHitos'
 import { formatearMoneda } from '../utils/cursoHelpers'
 import { compareNormalized } from '../utils/normalizers'
 
+const ProgramacionModal = ({ curso, onClose, onConfirm }) => {
+  const [form, setForm] = useState({
+    fecha: '',
+    hora: '09:00',
+    participantes: String(curso?.totalParticipantesProgramados || curso?.participantes || ''),
+    relator: curso?.otecSugerido || ''
+  })
+  const [error, setError] = useState('')
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+
+    if (!form.fecha) {
+      setError('Debes seleccionar una fecha para programar el curso')
+      return
+    }
+
+    if (!/^\d{2}:\d{2}$/.test(form.hora)) {
+      setError('Debes ingresar un horario válido')
+      return
+    }
+
+    const participantes = parseInt(form.participantes)
+    if (!participantes || participantes < 1) {
+      setError('Ingresa una cantidad válida de participantes')
+      return
+    }
+
+    if (!form.relator.trim()) {
+      setError('Debes indicar un relator para programar el curso')
+      return
+    }
+
+    onConfirm({
+      fecha: form.fecha,
+      hora: form.hora,
+      participantes,
+      relator: form.relator.trim()
+    })
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 bg-slate-900/40 flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-xl w-full">
+        <div className="p-5 border-b border-slate-200">
+          <h3 className="text-lg font-bold text-slate-800">Programar curso</h3>
+          <p className="text-sm text-slate-500 mt-1">
+            Completa la programación para que el curso pase a estado <span className="font-semibold">Programado</span> y se agregue al Calendario PAC.
+          </p>
+          <p className="text-sm text-slate-700 mt-2 font-medium">{curso?.nombre}</p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="p-5 space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Fecha</label>
+              <input
+                type="date"
+                className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm"
+                value={form.fecha}
+                onChange={(e) => setForm(prev => ({ ...prev, fecha: e.target.value }))}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Horario</label>
+              <input
+                type="time"
+                className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm"
+                value={form.hora}
+                onChange={(e) => setForm(prev => ({ ...prev, hora: e.target.value }))}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Participantes</label>
+              <input
+                type="number"
+                min="1"
+                className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm"
+                value={form.participantes}
+                onChange={(e) => setForm(prev => ({ ...prev, participantes: e.target.value }))}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Relator</label>
+              <input
+                type="text"
+                className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm"
+                value={form.relator}
+                onChange={(e) => setForm(prev => ({ ...prev, relator: e.target.value }))}
+                placeholder="Nombre del relator"
+              />
+            </div>
+          </div>
+
+          {error && (
+            <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg p-2">{error}</div>
+          )}
+
+          <div className="flex justify-end gap-2 pt-3 border-t border-slate-200">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 bg-slate-100 text-slate-600 rounded-xl text-sm font-semibold"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 bg-emerald-600 text-white rounded-xl text-sm font-semibold"
+            >
+              Confirmar programación
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
+
 const GestionHitos = ({
   cursos,
   progresoHitos,
   onToggleHito,
   onCambiarEstadoEspecial,
   onRevertirEstado,
+  onProgramarCurso,
   filtrosAplicados,
   lastUpdate
 }) => {
   const [cursoExpandido, setCursoExpandido] = useState(null)
+  const [programacionPendiente, setProgramacionPendiente] = useState(null)
 
   // Aplicar filtros
   const cursosFiltrados = cursos.filter(curso => {
@@ -42,6 +163,19 @@ const GestionHitos = ({
   const limpiarFiltros = () => {
     // Este evento debería ser manejado por el componente padre
     window.dispatchEvent(new CustomEvent('limpiarFiltros'))
+  }
+
+  const manejarToggleHito = (cursoOriginalIndex, hitoIndex, progreso, estadoActual) => {
+    const nuevosHitos = [...(progreso.hitos || [false, false, false, false])]
+    nuevosHitos[hitoIndex] = !nuevosHitos[hitoIndex]
+    const todosCompletados = nuevosHitos.every(h => h)
+
+    if (estadoActual === 'En Proceso' && todosCompletados && nuevosHitos[hitoIndex]) {
+      setProgramacionPendiente({ cursoIndex: cursoOriginalIndex, curso: cursos[cursoOriginalIndex] })
+      return
+    }
+
+    onToggleHito(cursoOriginalIndex, hitoIndex)
   }
 
   // Datos para gráfico de avance por mes de inicio
@@ -135,21 +269,14 @@ const GestionHitos = ({
               const colorEstado = obtenerColorPorEstado(estadoActual)
               const hitosCompletados = progreso.hitos.filter(h => h).length
               const expandido = cursoExpandido === cursoOriginalIndex
-              const totalParticipantes = curso.participantesPorMes
-                ? Object.values(curso.participantesPorMes).reduce((a, b) => a + b, 0)
-                : (curso.participacion_real || 0)
-              const costoTotal = curso.valorPersona && totalParticipantes
-                ? formatearMoneda(curso.valorPersona * totalParticipantes)
-                : null
+
+              const costoTotal = curso.costoTotal ? formatearMoneda(curso.costoTotal) : null
+              const totalParticipantes = curso.totalParticipantesProgramados || curso.participantes
 
               return (
-                <div
-                  key={cursoOriginalIndex}
-                  className="border border-slate-200 rounded-2xl overflow-hidden hover:shadow-md transition-all bg-white"
-                >
-                  {/* Header del curso */}
+                <div key={cursoOriginalIndex} className="bg-slate-50 border border-slate-200 rounded-2xl overflow-hidden">
                   <div
-                    className="p-4 bg-slate-50 cursor-pointer"
+                    className="p-5 cursor-pointer hover:bg-slate-100 transition-colors"
                     onClick={() => setCursoExpandido(expandido ? null : cursoOriginalIndex)}
                   >
                     <div className="flex items-center justify-between flex-wrap gap-4">
@@ -237,7 +364,7 @@ const GestionHitos = ({
                                   ? 'bg-emerald-50 border-emerald-400'
                                   : 'bg-white border-slate-200 hover:border-emerald-300'
                               }`}
-                              onClick={() => onToggleHito(cursoOriginalIndex, hitoIndex)}
+                              onClick={() => manejarToggleHito(cursoOriginalIndex, hitoIndex, progreso, estadoActual)}
                             >
                               <div className="flex items-start gap-3">
                                 <div
@@ -329,6 +456,17 @@ const GestionHitos = ({
           </div>
         )}
       </div>
+
+      {programacionPendiente && (
+        <ProgramacionModal
+          curso={programacionPendiente.curso}
+          onClose={() => setProgramacionPendiente(null)}
+          onConfirm={(programacion) => {
+            onProgramarCurso(programacionPendiente.cursoIndex, programacion)
+            setProgramacionPendiente(null)
+          }}
+        />
+      )}
     </div>
   )
 }
