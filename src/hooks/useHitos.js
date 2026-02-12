@@ -16,6 +16,40 @@ import {
 export const useHitos = (cursos) => {
   const [progresoHitos, setProgresoHitos] = useState({})
 
+  const sincronizarCursoCalendario = (curso, programacion) => {
+    try {
+      const storageKey = 'pac2026_courses'
+      const saved = localStorage.getItem(storageKey)
+      const actuales = saved ? JSON.parse(saved) : []
+      const cursosCalendario = Array.isArray(actuales) ? actuales : []
+
+      const cursoId = `hito-${curso.id}`
+      const nombreRelator = programacion.relator?.trim() || curso.otecSugerido || 'Relator por confirmar'
+      const participantes = Number(programacion.participantes) || curso.totalParticipantesProgramados || curso.participantes || 1
+
+      const payload = {
+        id: cursoId,
+        nombre: curso.nombre,
+        proveedor: nombreRelator,
+        fecha: programacion.fecha,
+        hora: programacion.hora,
+        participantes,
+        duracion: Number(curso.horas) || 8,
+        vp: curso.vp || 'Otra',
+        gerencia: curso.gerencia || 'Sin gerencia'
+      }
+
+      const existe = cursosCalendario.some(item => item.id === cursoId)
+      const actualizados = existe
+        ? cursosCalendario.map(item => item.id === cursoId ? { ...item, ...payload } : item)
+        : [...cursosCalendario, payload]
+
+      localStorage.setItem(storageKey, JSON.stringify(actualizados))
+    } catch (error) {
+      console.error('Error sincronizando curso en calendario PAC:', error)
+    }
+  }
+
   // Cargar progreso desde localStorage
   useEffect(() => {
     const saved = localStorage.getItem('progresoHitos')
@@ -148,7 +182,44 @@ export const useHitos = (cursos) => {
     })
   }
 
-  return { progresoHitos, toggleHito, cambiarEstadoEspecial, revertirEstado }
+  const programarCurso = (cursoIndex, programacion) => {
+    setProgresoHitos(prev => {
+      const cursoProgreso = prev[cursoIndex] || {
+        hitos: [false, false, false, false],
+        estadoActual: cursos[cursoIndex]?.estado,
+        estadoAnterior: null,
+        historialEstados: []
+      }
+
+      const estadoActual = cursoProgreso.estadoActual
+      const historialActualizado = [
+        ...(cursoProgreso.historialEstados || []),
+        {
+          estado: estadoActual,
+          fecha: new Date().toISOString(),
+          motivo: `Programación confirmada: ${programacion.fecha} ${programacion.hora} • ${programacion.participantes} participantes • Relator: ${programacion.relator}`
+        }
+      ]
+
+      return {
+        ...prev,
+        [cursoIndex]: {
+          hitos: [false, false, false, false],
+          estadoActual: 'Programado',
+          estadoAnterior: estadoActual,
+          historialEstados: historialActualizado,
+          programacion
+        }
+      }
+    })
+
+    const curso = cursos[cursoIndex]
+    if (curso) {
+      sincronizarCursoCalendario(curso, programacion)
+    }
+  }
+
+  return { progresoHitos, toggleHito, cambiarEstadoEspecial, revertirEstado, programarCurso }
 }
 
 /**
