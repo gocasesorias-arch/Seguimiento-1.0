@@ -8,6 +8,7 @@ import { cursosService } from './services/apiService'
 import { validarCurso, normalizarCurso } from './utils/cursoHelpers'
 import { useHitos } from './hooks/useHitos'
 import { compareNormalized } from './utils/normalizers'
+import CalendarioCapacitacion from './components/calendario/CalendarioCapacitacion'
 
 function App() {
   const { user, isAuthenticated, logout } = useAuth()
@@ -359,72 +360,84 @@ function App() {
             >
               ✅ Gestión de Hitos
             </button>
+            <button
+              onClick={() => setVistaActual('calendario')}
+              className={`px-6 py-2 rounded-xl font-semibold transition-colors border ${
+                vistaActual === 'calendario'
+                  ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
+                  : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200'
+              }`}
+            >
+              Calendario PAC
+            </button>
           </div>
         </div>
 
         {/* Login Modal */}
         {showLogin && <LoginForm onClose={() => setShowLogin(false)} />}
 
-        {/* Estadísticas Mejoradas */}
-        <div>
-          <h2 className="text-lg font-semibold text-slate-800 mb-3">Dashboard de estadísticas</h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-4">
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 border-t-4 border-emerald-500">
-              <div className="text-2xl font-bold text-emerald-600">{estadisticas.total}</div>
-              <div className="text-xs text-slate-500">Filtrados</div>
-            </div>
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 border-t-4 border-green-500">
-              <div className="text-2xl font-bold text-green-600">{estadisticas.realizados}</div>
-              <div className="text-xs text-slate-500">Realizados</div>
-            </div>
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 border-t-4 border-sky-500">
-              <div className="text-2xl font-bold text-sky-600">{estadisticas.enEjecucion}</div>
-              <div className="text-xs text-slate-500">En Ejecución</div>
-            </div>
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 border-t-4 border-indigo-500">
-              <div className="text-2xl font-bold text-indigo-600">{estadisticas.enProceso}</div>
-              <div className="text-xs text-slate-500">En Proceso</div>
-            </div>
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 border-t-4 border-amber-500">
-              <div className="text-2xl font-bold text-amber-600">{estadisticas.programado}</div>
-              <div className="text-xs text-slate-500">Programado</div>
-            </div>
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 border-t-4 border-cyan-500">
-              <div className="text-2xl font-bold text-cyan-600">{estadisticas.planificado}</div>
-              <div className="text-xs text-slate-500">Planificado</div>
-            </div>
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 border-t-4 border-slate-500">
-              <div className="text-2xl font-bold text-slate-700">{estadisticas.pendiente}</div>
-              <div className="text-xs text-slate-500">Pendiente</div>
-            </div>
-          </div>
-        </div>
-        <div className="text-sm text-slate-600 flex items-center gap-2">
-          <span className="inline-flex items-center px-3 py-1 bg-white text-slate-600 rounded-full border border-slate-200 font-semibold shadow-sm">
-            Fecha última actualización: {lastUpdate.toLocaleString()}
-          </span>
-        </div>
-
-        {/* Sección de listado */}
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-          <div className="flex items-center justify-between flex-wrap gap-3 mb-4">
+        {/* Estadísticas y filtros — hidden when calendar view is active */}
+        {vistaActual !== 'calendario' && (
+          <>
             <div>
-              <h2 className="text-lg font-semibold text-slate-800">Listado de Cursos</h2>
-              <p className="text-sm text-slate-500">Gestiona y da seguimiento a todas las capacitaciones</p>
+              <h2 className="text-lg font-semibold text-slate-800 mb-3">Dashboard de estadísticas</h2>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-4">
+                <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 border-t-4 border-emerald-500">
+                  <div className="text-2xl font-bold text-emerald-600">{estadisticas.total}</div>
+                  <div className="text-xs text-slate-500">Filtrados</div>
+                </div>
+                <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 border-t-4 border-green-500">
+                  <div className="text-2xl font-bold text-green-600">{estadisticas.realizados}</div>
+                  <div className="text-xs text-slate-500">Realizados</div>
+                </div>
+                <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 border-t-4 border-sky-500">
+                  <div className="text-2xl font-bold text-sky-600">{estadisticas.enEjecucion}</div>
+                  <div className="text-xs text-slate-500">En Ejecución</div>
+                </div>
+                <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 border-t-4 border-indigo-500">
+                  <div className="text-2xl font-bold text-indigo-600">{estadisticas.enProceso}</div>
+                  <div className="text-xs text-slate-500">En Proceso</div>
+                </div>
+                <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 border-t-4 border-amber-500">
+                  <div className="text-2xl font-bold text-amber-600">{estadisticas.programado}</div>
+                  <div className="text-xs text-slate-500">Programado</div>
+                </div>
+                <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 border-t-4 border-cyan-500">
+                  <div className="text-2xl font-bold text-cyan-600">{estadisticas.planificado}</div>
+                  <div className="text-xs text-slate-500">Planificado</div>
+                </div>
+                <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 border-t-4 border-slate-500">
+                  <div className="text-2xl font-bold text-slate-700">{estadisticas.pendiente}</div>
+                  <div className="text-xs text-slate-500">Pendiente</div>
+                </div>
+              </div>
             </div>
-            <span className="px-3 py-1 rounded-full text-xs font-semibold bg-teal-50 text-teal-700 border border-teal-200">
-              {cursosFiltrados.length} resultados
-            </span>
-          </div>
+            <div className="text-sm text-slate-600 flex items-center gap-2">
+              <span className="inline-flex items-center px-3 py-1 bg-white text-slate-600 rounded-full border border-slate-200 font-semibold shadow-sm">
+                Fecha última actualización: {lastUpdate.toLocaleString()}
+              </span>
+            </div>
 
-          {/* Filtros con cascada */}
-          <FiltrosCursos
-            filtros={filtros}
-            onFiltroChange={handleFiltroChange}
-            onLimpiarFiltros={handleLimpiarFiltros}
-            cursos={cursosConEstado}
-          />
-        </div>
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+              <div className="flex items-center justify-between flex-wrap gap-3 mb-4">
+                <div>
+                  <h2 className="text-lg font-semibold text-slate-800">Listado de Cursos</h2>
+                  <p className="text-sm text-slate-500">Gestiona y da seguimiento a todas las capacitaciones</p>
+                </div>
+                <span className="px-3 py-1 rounded-full text-xs font-semibold bg-teal-50 text-teal-700 border border-teal-200">
+                  {cursosFiltrados.length} resultados
+                </span>
+              </div>
+
+              <FiltrosCursos
+                filtros={filtros}
+                onFiltroChange={handleFiltroChange}
+                onLimpiarFiltros={handleLimpiarFiltros}
+                cursos={cursosConEstado}
+              />
+            </div>
+          </>
+        )}
 
         {/* Vista Listado */}
         {vistaActual === 'listado' && (
@@ -478,6 +491,11 @@ function App() {
             filtrosAplicados={filtros}
             lastUpdate={lastUpdate}
           />
+        )}
+
+        {/* Vista Calendario PAC 2026 */}
+        {vistaActual === 'calendario' && (
+          <CalendarioCapacitacion />
         )}
 
         {/* Footer mejorado */}
