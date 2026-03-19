@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useAuth } from './context/AuthContext'
 import FiltrosCursos from './components/FiltrosCursos'
 import TarjetaCurso from './components/TarjetaCurso'
@@ -19,6 +19,7 @@ function App() {
   const [apiMode, setApiMode] = useState(true) // true = API, false = JSON
   const [vistaActual, setVistaActual] = useState('listado') // 'listado' o 'gestion'
   const [lastUpdate, setLastUpdate] = useState(new Date())
+  const [importandoSharePoint, setImportandoSharePoint] = useState(false)
   const [filtros, setFiltros] = useState({
     vp: 'Todos',
     gerencia: 'Todas',
@@ -31,16 +32,15 @@ function App() {
   const { progresoHitos, toggleHito, cambiarEstadoEspecial, revertirEstado, programarCurso } = useHitos(cursos)
 
   // Cargar datos desde API o JSON
-  useEffect(() => {
-    const cargarDatos = async () => {
-      try {
-        setLoading(true)
-        setError(null)
+  const cargarDatos = useCallback(async () => {
+    try {
+      setLoading(true)
+      setError(null)
 
-        if (apiMode) {
-          // Modo API: Obtener desde backend
-          try {
-            const response = await cursosService.getCursos()
+      if (apiMode) {
+        // Modo API: Obtener desde backend
+        try {
+          const response = await cursosService.getCursos()
 
             if (response.success && Array.isArray(response.data)) {
               // Los datos ya vienen normalizados desde la BD, pero normalizar VP a mayúsculas
@@ -68,19 +68,19 @@ function App() {
                 return true
               })
 
-              setCursos(sinDuplicados)
-              console.log(`✅ ${sinDuplicados.length} cursos cargados desde API (${cursosValidos.length - sinDuplicados.length} duplicados removidos)`)
-            } else {
-              throw new Error('Formato de datos inválido desde API')
-            }
-          } catch (apiError) {
-            console.warn('API no disponible, cargando desde JSON local:', apiError)
-            setApiMode(false) // Fallback a JSON
-            return // Triggerea otro useEffect
+            setCursos(sinDuplicados)
+            console.log(`✅ ${sinDuplicados.length} cursos cargados desde API (${cursosValidos.length - sinDuplicados.length} duplicados removidos)`)
+          } else {
+            throw new Error('Formato de datos inválido desde API')
           }
-        } else {
-          // Modo JSON: Fallback al archivo local
-          const response = await fetch('/Seguimiento-1.0/cursos.json')
+        } catch (apiError) {
+          console.warn('API no disponible, cargando desde JSON local:', apiError)
+          setApiMode(false) // Fallback a JSON
+          return // Triggerea otro useEffect
+        }
+      } else {
+        // Modo JSON: Fallback al archivo local
+        const response = await fetch('/Seguimiento-1.0/cursos.json')
 
           if (!response.ok) {
             throw new Error(`Error HTTP: ${response.status}`)
@@ -141,21 +141,45 @@ function App() {
             return true
           })
 
-          setCursos(sinDuplicados)
-          console.log(`✅ ${sinDuplicados.length} cursos cargados desde JSON (${cursosValidos.length - sinDuplicados.length} duplicados removidos)`)
-        }
-
-        setLastUpdate(new Date())
-        setLoading(false)
-      } catch (err) {
-        console.error('Error cargando datos:', err)
-        setError(err.message)
-        setLoading(false)
+        setCursos(sinDuplicados)
+        console.log(`✅ ${sinDuplicados.length} cursos cargados desde JSON (${cursosValidos.length - sinDuplicados.length} duplicados removidos)`)
       }
-    }
 
-    cargarDatos()
+      setLastUpdate(new Date())
+      setLoading(false)
+    } catch (err) {
+      console.error('Error cargando datos:', err)
+      setError(err.message)
+      setLoading(false)
+    }
   }, [apiMode])
+
+  useEffect(() => {
+    cargarDatos()
+  }, [cargarDatos])
+
+  const handleImportarDesdeSharePoint = async () => {
+    const excelUrl = window.prompt('Pega la URL de exportación CSV del Excel en SharePoint:')
+
+    if (!excelUrl) return
+
+    try {
+      setImportandoSharePoint(true)
+      const response = await cursosService.importarDesdeSharePoint(excelUrl)
+
+      if (!response.success) {
+        throw new Error(response.message || 'No se pudo importar el archivo')
+      }
+
+      await cargarDatos()
+      alert(`✅ Importación completada. Cursos procesados: ${response.data?.imported || 0}`)
+    } catch (importError) {
+      console.error('Error importando desde SharePoint:', importError)
+      alert(`❌ Error al importar: ${importError.message || 'Error desconocido'}`)
+    } finally {
+      setImportandoSharePoint(false)
+    }
+  }
 
   // Escuchar evento de limpiar filtros
   useEffect(() => {
@@ -375,6 +399,19 @@ function App() {
             >
               Calendario PAC
             </button>
+            {isAuthenticated && apiMode && (
+              <button
+                onClick={handleImportarDesdeSharePoint}
+                disabled={importandoSharePoint}
+                className={`px-6 py-2 rounded-xl font-semibold transition-colors border ${
+                  importandoSharePoint
+                    ? 'bg-slate-200 text-slate-500 border-slate-300 cursor-not-allowed'
+                    : 'bg-blue-600 text-white border-blue-600 hover:bg-blue-700'
+                }`}
+              >
+                {importandoSharePoint ? '⏳ Importando...' : '🔄 Actualizar desde SharePoint'}
+              </button>
+            )}
           </div>
         </div>
 

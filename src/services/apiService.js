@@ -151,6 +151,13 @@ export const cursosService = {
    */
   async getEstadisticas() {
     return apiService.get(API_ENDPOINTS.estadisticas, {}, false)
+  },
+
+  /**
+   * Importar cursos desde Excel de SharePoint
+   */
+  async importarDesdeSharePoint(excelUrl) {
+    return apiService.post(API_ENDPOINTS.importarSharePoint, { excelUrl }, true)
   }
 }
 
