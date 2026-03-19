@@ -5,7 +5,8 @@ import {
   createCurso,
   updateCurso,
   deleteCurso,
-  getEstadisticas
+  getEstadisticas,
+  importarDesdeSharePoint
 } from '../controllers/cursosController.js'
 import { authenticateToken, requireAdmin, optionalAuth } from '../middleware/auth.js'
 
@@ -48,5 +49,11 @@ router.put('/:id', authenticateToken, updateCurso)
  * Eliminar curso (requiere autenticación y rol admin)
  */
 router.delete('/:id', authenticateToken, requireAdmin, deleteCurso)
+
+/**
+ * POST /api/cursos/importar-sharepoint
+ * Importar cursos desde un Excel en SharePoint (requiere autenticación)
+ */
+router.post('/importar-sharepoint', authenticateToken, importarDesdeSharePoint)
 
 export default router

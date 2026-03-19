@@ -16,6 +16,7 @@ export const API_ENDPOINTS = {
   cursos: '/cursos',
   curso: (id) => `/cursos/${id}`,
   estadisticas: '/cursos/estadisticas',
+  importarSharePoint: '/cursos/importar-sharepoint',
 
   // Health
   health: '/health'
